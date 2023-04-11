@@ -1,71 +1,38 @@
-# gpt-context-generator README
+GPT Context Generator
+=====================
 
-This is the README for your extension "gpt-context-generator". After writing up a brief description, we recommend including the following sections.
+This Visual Studio Code extension helps you generate context for .js/.jsx and .ts/.tsx files, making it easier to collaborate with AI models like OpenAI's GPT-4. The extension generates context by pulling in non-CSS dependencies such as API pages that are referenced in your code. It also respects `.gitignore` rules to avoid including unnecessary files.
 
-## Features
+Features
+--------
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+-   Generate context for the entire workspace
+-   Generate context for the currently open file and its dependencies
+-   Estimate the number of OpenAI tokens in the generated context
 
-For example if there is an image subfolder under your extension project workspace:
+Usage
+-----
 
-\!\[feature X\]\(images/feature-x.png\)
+### Generate context for the entire workspace
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+1.  Open a workspace in Visual Studio Code.
+2.  Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
+3.  Type `Generate GPT Friendly Context` and select the command from the list.
+4.  The generated context will be displayed in a new editor tab.
 
-## Requirements
+### Generate context for the currently open file and its dependencies
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+1.  Open a file in Visual Studio Code.
+2.  Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
+3.  Type `Generate GPT Friendly Context for Open File` and select the command from the list.
+4.  The generated context, including dependencies, will be displayed in a new editor tab.
 
-## Extension Settings
+Token Count Estimation
+----------------------
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+When generating context, the extension will also display an information message with an estimated number of OpenAI tokens in the generated text. This information can be helpful when working with AI models that have token limitations.
 
-For example:
+License
+-------
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+This extension is released under the MIT License.

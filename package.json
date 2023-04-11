@@ -1,7 +1,7 @@
 {
   "name": "gpt-context-generator",
   "displayName": "gpt-context-generator",
-  "description": "Generate GPT friendly context for files or workspaces",
+  "description": "Generate GPT friendly context for js/ts files or workspaces",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.77.0"
@@ -14,8 +14,12 @@
   "contributes": {
     "commands": [
       {
-        "command": "gpt-context-generator.helloWorld",
-        "title": "Hello World"
+        "command": "gpt-context-generator.createGPTFriendlyContext",
+        "title": "Create GPT Friendly Context"
+      },
+      {
+        "command": "gpt-context-generator.createGPTFriendlyContextForOpenFile",
+        "title": "Create GPT Friendly Context for this file and its dependencies"
       }
     ]
   },
@@ -27,17 +31,25 @@
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js"
   },
+  "dependencies": {
+    "ignore": "^5.2.4"
+  },
   "devDependencies": {
-    "@types/vscode": "^1.77.0",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.77.0",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
+    "@vscode/test-electron": "^2.3.0",
     "eslint": "^8.36.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
-    "typescript": "^4.9.5",
-    "@vscode/test-electron": "^2.3.0"
-  }
+    "typescript": "^4.9.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codybrom/gpt-context-generator.git"
+  },
+  "license": "MIT"
 }
