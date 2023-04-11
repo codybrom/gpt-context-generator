@@ -1,13 +1,26 @@
 {
   "name": "gpt-context-generator",
-  "displayName": "gpt-context-generator",
-  "description": "Generate GPT friendly context for js/ts files or workspaces",
+  "displayName": "GPT Context Generator",
+  "description": "Generate GPT-friendly context for js/ts files or workspaces",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.77.0"
   },
   "categories": [
+    "Machine Learning",
     "Other"
+  ],
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#C80000",
+    "theme": "dark"
+  },
+  "keywords": [
+    "gpt-4",
+    "gpt",
+    "openai",
+    "generator",
+    "context"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
