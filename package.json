@@ -51,5 +51,6 @@
     "type": "git",
     "url": "https://github.com/codybrom/gpt-context-generator.git"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publisher": "codybrom"
 }
