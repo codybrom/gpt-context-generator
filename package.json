@@ -2,7 +2,7 @@
   "name": "gpt-context-generator",
   "displayName": "GPT Context Generator",
   "description": "Generate GPT-friendly context for js/ts files or workspaces",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.77.0"
   },
@@ -12,7 +12,7 @@
   ],
   "icon": "images/icon.png",
   "galleryBanner": {
-    "color": "#C80000",
+    "color": "#1F5738",
     "theme": "dark"
   },
   "keywords": [
@@ -45,7 +45,10 @@
     "test": "node ./out/test/runTest.js"
   },
   "dependencies": {
-    "ignore": "^5.2.4"
+    "gpt-3-encoder": "^1.1.4",
+    "ignore": "^5.2.4",
+    "prettier": "^2.8.7",
+    "prettier-airbnb-config": "^1.0.0"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
