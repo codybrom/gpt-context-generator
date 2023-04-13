@@ -1,13 +1,9 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import ignoreFactory = require('ignore');
 import {encode} from 'gpt-3-encoder';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     'gpt-context-generator.createGPTFriendlyContext',
@@ -40,7 +36,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  // Register a new command for creating context for the open file
   let disposableOpenFile = vscode.commands.registerCommand(
     'gpt-context-generator.createGPTFriendlyContextForOpenFile',
     async () => {
@@ -134,12 +129,10 @@ async function createGPTFriendlyContextForOpenFile(
 
   const gptContext: string[] = [];
 
-  // Add the content of the currently open file
   const openFileContent = fs.readFileSync(openFilePath).toString();
   const openFileRelPath = path.relative(workspacePath, openFilePath);
   gptContext.push(`File: ${openFileRelPath}\n\n${openFileContent}\n\n`);
 
-  // Helper function to extract import paths from a file's content
   const extractImports = (content: string): string[] => {
     const regex = /import\s+.*\s+from\s+['"](.*)['"];/g;
     const imports: string[] = [];
@@ -172,5 +165,4 @@ function estimateTokenCount(text: string): number {
   return encoded.length;
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
