@@ -2,7 +2,7 @@
   "name": "gpt-context-generator",
   "displayName": "GPT Context Generator",
   "description": "Generate GPT-friendly context for files or workspaces",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.77.0"
   },
@@ -28,11 +28,11 @@
     "commands": [
       {
         "command": "gpt-context-generator.createGPTFriendlyContextForOpenFile",
-        "title": "Create GPT Friendly Context (Current File + Imports)"
+        "title": "Generate GPT Context (Current File + Imports)"
       },
       {
         "command": "gpt-context-generator.createGPTFriendlyContext",
-        "title": "Create GPT Friendly Context (Workspace)"
+        "title": "Generate GPT Context (Workspace)"
       }
     ],
     "configuration": {
