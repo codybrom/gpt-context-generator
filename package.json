@@ -1,7 +1,7 @@
 {
   "name": "gpt-context-generator",
   "displayName": "GPT Context Generator",
-  "description": "Generate GPT-friendly context for js/ts files or workspaces",
+  "description": "Generate GPT-friendly context for files or workspaces",
   "version": "0.0.3",
   "engines": {
     "vscode": "^1.77.0"
@@ -27,12 +27,12 @@
   "contributes": {
     "commands": [
       {
-        "command": "gpt-context-generator.createGPTFriendlyContext",
-        "title": "Create GPT Friendly Context"
+        "command": "gpt-context-generator.createGPTFriendlyContextForOpenFile",
+        "title": "Create GPT Friendly Context (Current File + Imports)"
       },
       {
-        "command": "gpt-context-generator.createGPTFriendlyContextForOpenFile",
-        "title": "Create GPT Friendly Context for this file and its dependencies"
+        "command": "gpt-context-generator.createGPTFriendlyContext",
+        "title": "Create GPT Friendly Context (Workspace)"
       }
     ],
     "configuration": {
@@ -61,6 +61,11 @@
           ],
           "default": "clipboard",
           "description": "Output method for the generated context (New Window or Clipboard)."
+        },
+        "gpt-context-generator.includePackageJson": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include package.json as part of the context."
         }
       }
     }

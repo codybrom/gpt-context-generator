@@ -13,7 +13,9 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
       const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-      await handleCommand(workspacePath);
+      const config = vscode.workspace.getConfiguration('gpt-context-generator');
+      const includePackageJson = (config.get('includePackageJson') as boolean) ?? false;
+      await handleCommand(workspacePath, {includePackageJson});
     }
   );
 
@@ -26,7 +28,9 @@ export function activate(context: vscode.ExtensionContext) {
       }
       const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
       const openFilePath = vscode.window.activeTextEditor.document.uri.fsPath;
-      await handleCommand(workspacePath, openFilePath);
+      const config = vscode.workspace.getConfiguration('gpt-context-generator');
+      const includePackageJson = (config.get('includePackageJson') as boolean) ?? false;
+      await handleCommand(workspacePath, {openFilePath, includePackageJson});
     }
   );
 
@@ -34,13 +38,23 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-async function handleCommand(workspacePath: string, openFilePath?: string) {
+async function handleCommand(
+  workspacePath: string,
+  options: {
+    openFilePath?: string;
+    includePackageJson?: boolean;
+  }
+) {
   const config = vscode.workspace.getConfiguration('gpt-context-generator');
   const outputMethod = config.get('outputMethod') as string;
 
-  const gptContext = openFilePath
-    ? await createGPTFriendlyContextForOpenFile(workspacePath, openFilePath)
-    : await createGPTFriendlyContext(workspacePath);
+  const gptContext = options.openFilePath
+    ? await createGPTFriendlyContextForOpenFile(
+        workspacePath,
+        options.openFilePath,
+        options.includePackageJson ?? false
+      )
+    : await createGPTFriendlyContext(workspacePath, options.includePackageJson ?? false);
 
   if (outputMethod === 'newWindow') {
     const gptContextDocument = await vscode.workspace.openTextDocument({
@@ -66,7 +80,10 @@ async function handleCommand(workspacePath: string, openFilePath?: string) {
   }
 }
 
-async function createGPTFriendlyContext(workspacePath: string): Promise<string> {
+async function createGPTFriendlyContext(
+  workspacePath: string,
+  includePackageJson: boolean
+): Promise<string> {
   const gitIgnorePath = path.join(workspacePath, '.gitignore');
   const ignoreFilter = ignoreFactory();
 
@@ -105,13 +122,22 @@ async function createGPTFriendlyContext(workspacePath: string): Promise<string> 
     }
   };
 
+  if (includePackageJson) {
+    const packageJsonPath = path.join(workspacePath, 'package.json');
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJsonContent = fs.readFileSync(packageJsonPath).toString();
+      gptContext.push(`File: package.json\n\n${packageJsonContent}\n\n`);
+    }
+  }
+
   await processDirectory(workspacePath);
   return gptContext.join('\n');
 }
 
 async function createGPTFriendlyContextForOpenFile(
   workspacePath: string,
-  openFilePath: string
+  openFilePath: string,
+  includePackageJson: boolean
 ): Promise<string> {
   const gitIgnorePath = path.join(workspacePath, '.gitignore');
   const ignoreFilter = ignoreFactory();
@@ -157,6 +183,14 @@ async function createGPTFriendlyContextForOpenFile(
         const importedFileContent = fs.readFileSync(absoluteImportPath).toString();
         gptContext.push(`File: ${relImportPath}\n\n${importedFileContent}\n\n`);
       }
+    }
+  }
+
+  if (includePackageJson) {
+    const packageJsonPath = path.join(workspacePath, 'package.json');
+    if (fs.existsSync(packageJsonPath)) {
+      const packageJsonContent = fs.readFileSync(packageJsonPath).toString();
+      gptContext.push(`File: package.json\n\n${packageJsonContent}\n\n`);
     }
   }
 
