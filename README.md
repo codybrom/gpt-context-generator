@@ -7,7 +7,7 @@
 
 This Visual Studio Code extension helps you generate context for .js/.jsx and .ts/.tsx files, making
 it easier to collaborate with AI models like OpenAI's GPT-4. The extension generates context by
-pulling in non-CSS dependencies such as API pages that are referenced in your code. It also respects
+pulling in local dependencies such as API pages that are referenced in your code. It also respects
 `.gitignore` rules to avoid including unnecessary files.
 
 ## Features
