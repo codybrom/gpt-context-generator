@@ -34,7 +34,36 @@
         "command": "gpt-context-generator.createGPTFriendlyContextForOpenFile",
         "title": "Create GPT Friendly Context for this file and its dependencies"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "GPT Context Generator",
+      "properties": {
+        "gpt-context-generator.detectedFileExtensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "js",
+            "jsx",
+            "ts",
+            "tsx",
+            "mdx",
+            "json"
+          ],
+          "description": "File extensions to be detected and included in the generated context."
+        },
+        "gpt-context-generator.outputMethod": {
+          "type": "string",
+          "enum": [
+            "newWindow",
+            "clipboard"
+          ],
+          "default": "clipboard",
+          "description": "Output method for the generated context (New Window or Clipboard)."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn run compile",
