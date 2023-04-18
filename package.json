@@ -2,7 +2,7 @@
   "name": "gpt-context-generator",
   "displayName": "GPT Context Generator",
   "description": "Generate GPT-friendly context for files or workspaces",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.77.0"
   },
@@ -65,7 +65,7 @@
         "gpt-context-generator.includePackageJson": {
           "type": "boolean",
           "default": true,
-          "description": "Include package.json as part of the context."
+          "description": "Include package.json as part of the context (Open File Only)."
         }
       }
     }

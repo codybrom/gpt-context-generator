@@ -122,14 +122,6 @@ async function createGPTFriendlyContext(
     }
   };
 
-  if (includePackageJson) {
-    const packageJsonPath = path.join(workspacePath, 'package.json');
-    if (fs.existsSync(packageJsonPath)) {
-      const packageJsonContent = fs.readFileSync(packageJsonPath).toString();
-      gptContext.push(`File: package.json\n\n${packageJsonContent}\n\n`);
-    }
-  }
-
   await processDirectory(workspacePath);
   return gptContext.join('\n');
 }
