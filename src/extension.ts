@@ -116,7 +116,8 @@ async function createGPTFriendlyContext(
 
         if (detectedFileExtensions.includes(fileExtension)) {
           const fileContent = fs.readFileSync(filePath).toString();
-          gptContext.push(`File: ${relFilePath}\n\n${fileContent}\n\n`);
+          const fileComment = `// --- END OF FILE: ${relFilePath} ---\n\n// --- START OF FILE: ${relFilePath} ---\n`;
+          gptContext.push(`${fileComment}${fileContent}\n\n`);
         }
       }
     }
@@ -125,6 +126,22 @@ async function createGPTFriendlyContext(
   await processDirectory(workspacePath);
   return gptContext.join('\n');
 }
+
+const extractImports = (content: string): string[] => {
+  const regex =
+    /import\s+(?:[a-zA-Z0-9_{}\s*]*\s+from\s+)?['"]([^'"]+)['"]|import\(['"]([^'"]+)['"]\)/g;
+  const imports: string[] = [];
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(content)) !== null) {
+    const importPath = match[1] ?? match[2];
+    if (importPath) {
+      imports.push(importPath);
+    }
+  }
+
+  return imports;
+};
 
 async function createGPTFriendlyContextForOpenFile(
   workspacePath: string,
@@ -148,33 +165,44 @@ async function createGPTFriendlyContextForOpenFile(
   const openFileExtension = path.extname(openFilePath).toLowerCase().substring(1);
 
   if (detectedFileExtensions.includes(openFileExtension)) {
-    gptContext.push(`File: ${openFileRelPath}\n\n${openFileContent}\n\n`);
+    const fileStartComment = `// --- START FILE: ${openFileRelPath} ---\n`;
+    const fileEndComment = `\n// --- END FILE: ${openFileRelPath} ---`;
+    gptContext.push(`${fileStartComment}${openFileContent}${fileEndComment}\n\n`);
   }
-
-  const extractImports = (content: string): string[] => {
-    const regex = /import\s+.*\s+from\s+['"](.*)['"];/g;
-    const imports: string[] = [];
-    let match: RegExpExecArray | null;
-
-    while ((match = regex.exec(content)) !== null) {
-      imports.push(match[1]);
-    }
-
-    return imports;
-  };
 
   const imports = extractImports(openFileContent);
   for (const importPath of imports) {
-    const importFileExtension = path.extname(importPath).toLowerCase().substring(1);
+    const resolvedImportPath = path.resolve(path.dirname(openFilePath), importPath);
+    const relImportPath = path.relative(workspacePath, resolvedImportPath);
 
-    if (detectedFileExtensions.includes(importFileExtension)) {
-      const absoluteImportPath = path.resolve(path.dirname(openFilePath), importPath);
-      const relImportPath = path.relative(workspacePath, absoluteImportPath);
+    if (ignoreFilter.ignores(relImportPath)) {
+      continue;
+    }
 
-      if (!ignoreFilter.ignores(relImportPath) && fs.existsSync(absoluteImportPath)) {
-        const importedFileContent = fs.readFileSync(absoluteImportPath).toString();
-        gptContext.push(`File: ${relImportPath}\n\n${importedFileContent}\n\n`);
+    const importFileExtension = path.extname(resolvedImportPath).toLowerCase().substring(1);
+
+    if (!importFileExtension) {
+      // Try adding default file extensions if importPath has no extension
+      for (const ext of detectedFileExtensions) {
+        const importFilePathWithExt = `${resolvedImportPath}.${ext}`;
+        const relImportPathWithExt = path.relative(workspacePath, importFilePathWithExt);
+
+        if (fs.existsSync(importFilePathWithExt)) {
+          const importedFileContent = fs.readFileSync(importFilePathWithExt).toString();
+          const fileStartComment = `// --- START FILE: ${relImportPathWithExt} ---\n`;
+          const fileEndComment = `\n// --- END FILE: ${relImportPathWithExt} ---`;
+          gptContext.push(`${fileStartComment}${importedFileContent}${fileEndComment}\n\n`);
+          break;
+        }
       }
+    } else if (
+      detectedFileExtensions.includes(importFileExtension) &&
+      fs.existsSync(resolvedImportPath)
+    ) {
+      const importedFileContent = fs.readFileSync(resolvedImportPath).toString();
+      const fileStartComment = `// --- START FILE: ${resolvedImportPath} ---\n`;
+      const fileEndComment = `\n// --- END FILE: ${resolvedImportPath} ---`;
+      gptContext.push(`${fileStartComment}${importedFileContent}${fileEndComment}\n\n`);
     }
   }
 
@@ -182,7 +210,9 @@ async function createGPTFriendlyContextForOpenFile(
     const packageJsonPath = path.join(workspacePath, 'package.json');
     if (fs.existsSync(packageJsonPath)) {
       const packageJsonContent = fs.readFileSync(packageJsonPath).toString();
-      gptContext.push(`File: package.json\n\n${packageJsonContent}\n\n`);
+      const fileStartComment = `// --- START FILE: package.json ---\n`;
+      const fileEndComment = `\n// --- END FILE: package.json ---`;
+      gptContext.push(`${fileStartComment}${packageJsonContent}${fileEndComment}\n\n`);
     }
   }
 
