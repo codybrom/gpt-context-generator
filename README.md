@@ -45,8 +45,8 @@ From settings, you can configure the extension to work as you prefer.
 - **Output method**
   - Copy to Clipboard (_default_)
   - New Window as plaintext
-- **Include package.json in context** (_default: true_)
-- **Set File Extensions to Include in Context**
+- **Include package.json in open-file context** (_default: true_)
+- **Set File Extensions to Include in Workspace Context**
   - _defaults: js, jsx, ts, tsx, mdx, json_
 
 ## License
