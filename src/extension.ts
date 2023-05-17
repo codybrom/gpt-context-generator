@@ -203,6 +203,7 @@ async function createGPTFriendlyContext(
   const gptContext: string[] = [];
   const config = vscode.workspace.getConfiguration('gpt-context-generator');
   const detectedFileExtensions = config.get('detectedFileExtensions') as string[];
+  const format = config.get('fileCommentFormat') as string;
 
   const processDirectory = async (dir: string) => {
     const files = fs.readdirSync(dir);
@@ -224,8 +225,8 @@ async function createGPTFriendlyContext(
 
         if (detectedFileExtensions.includes(fileExtension)) {
           const fileContent = fs.readFileSync(filePath).toString();
-          const fileComment = `// --- END OF FILE: ${relFilePath} ---\n\n// --- START OF FILE: ${relFilePath} ---\n`;
-          gptContext.push(`${fileComment}${fileContent}\n\n`);
+          const fileComment = formatFileComment(format, relFilePath, fileExtension, fileContent);
+          gptContext.push(`${fileComment}\n\n`);
         }
       }
     }
@@ -243,7 +244,7 @@ async function createGPTFriendlyContext(
         const fileExtension = path.extname(filePath).toLowerCase().substring(1);
         if (detectedFileExtensions.includes(fileExtension)) {
           const fileContent = fs.readFileSync(filePath).toString();
-          const fileComment = `\`${relFilePath}\`\n\`\`\`${getMarkdownLang(fileExtension)}\n${fileContent}\n\`\`\``;
+          const fileComment = formatFileComment(format, relFilePath, fileExtension, fileContent);
           gptContext.push(`${fileComment}\n\n`);
         }
       }
@@ -291,15 +292,20 @@ async function createGPTFriendlyContextForOpenFile(
   const gptContext: string[] = [];
   const config = vscode.workspace.getConfiguration('gpt-context-generator');
   const detectedFileExtensions = config.get('detectedFileExtensions') as string[];
+  const format = config.get('fileCommentFormat') as string;
 
   const openFileContent = fs.readFileSync(openFilePath).toString();
   const openFileRelPath = path.relative(workspacePath, openFilePath);
   const openFileExtension = path.extname(openFilePath).toLowerCase().substring(1);
 
   if (detectedFileExtensions.includes(openFileExtension)) {
-    const fileStartComment = `// --- START FILE: ${openFileRelPath} ---\n`;
-    const fileEndComment = `\n// --- END FILE: ${openFileRelPath} ---`;
-    gptContext.push(`${fileStartComment}${openFileContent}${fileEndComment}\n\n`);
+    const fileComment = formatFileComment(
+      format,
+      openFileRelPath,
+      getMarkdownLang(openFileExtension),
+      openFileContent
+    );
+    gptContext.push(`${fileComment}\n\n`);
   }
 
   const imports = extractImports(openFileContent);
@@ -321,9 +327,13 @@ async function createGPTFriendlyContextForOpenFile(
 
         if (fs.existsSync(importFilePathWithExt)) {
           const importedFileContent = fs.readFileSync(importFilePathWithExt).toString();
-          const fileStartComment = `// --- START FILE: ${relImportPathWithExt} ---\n`;
-          const fileEndComment = `\n// --- END FILE: ${relImportPathWithExt} ---`;
-          gptContext.push(`${fileStartComment}${importedFileContent}${fileEndComment}\n\n`);
+          const fileComment = formatFileComment(
+            format,
+            relImportPathWithExt,
+            getMarkdownLang(ext),
+            importedFileContent
+          );
+          gptContext.push(`${fileComment}\n\n`);
           break;
         }
       }
@@ -332,9 +342,13 @@ async function createGPTFriendlyContextForOpenFile(
       fs.existsSync(resolvedImportPath)
     ) {
       const importedFileContent = fs.readFileSync(resolvedImportPath).toString();
-      const fileStartComment = `// --- START FILE: ${resolvedImportPath} ---\n`;
-      const fileEndComment = `\n// --- END FILE: ${resolvedImportPath} ---`;
-      gptContext.push(`${fileStartComment}${importedFileContent}${fileEndComment}\n\n`);
+      const fileComment = formatFileComment(
+        format,
+        relImportPath,
+        getMarkdownLang(importFileExtension),
+        importedFileContent
+      );
+      gptContext.push(`${fileComment}\n\n`);
     }
   }
 
@@ -342,9 +356,13 @@ async function createGPTFriendlyContextForOpenFile(
     const packageJsonPath = path.join(workspacePath, 'package.json');
     if (fs.existsSync(packageJsonPath)) {
       const packageJsonContent = fs.readFileSync(packageJsonPath).toString();
-      const fileStartComment = `// --- START FILE: package.json ---\n`;
-      const fileEndComment = `\n// --- END FILE: package.json ---`;
-      gptContext.push(`${fileStartComment}${packageJsonContent}${fileEndComment}\n\n`);
+      const fileComment = formatFileComment(
+        format,
+        'package.json',
+        getMarkdownLang('json'),
+        packageJsonContent
+      );
+      gptContext.push(`${fileComment}\n\n`);
     }
   }
 
@@ -367,6 +385,19 @@ function getMarkdownLang(fileExtension: string): string {
     default:
       return fileExtension;
   }
+}
+
+function formatFileComment(
+  format: string,
+  filePath: string,
+  fileExtension: string,
+  fileContent: string
+): string {
+  return format
+    .replace(/\\n/g, '\n')
+    .replace('{filePath}', filePath)
+    .replace('{markdownLang}', getMarkdownLang(fileExtension))
+    .replace('{fileContent}', fileContent);
 }
 
 export function deactivate() {}

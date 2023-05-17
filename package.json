@@ -82,6 +82,11 @@
           "type": "boolean",
           "default": true,
           "description": "Include package.json as part of the context (Open File Only)."
+        },
+        "gpt-context-generator.fileCommentFormat": {
+          "type": "string",
+          "default": "{filePath}\\n```{markdownLang}\\n{fileContent}\\n```",
+          "description": "The format of the file comment in the generated context. Use {filePath}, {markdownLang}, and {fileContent} as placeholders."
         }
       }
     },
