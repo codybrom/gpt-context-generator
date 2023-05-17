@@ -152,6 +152,7 @@ async function handleCommand(
 ) {
   const config = vscode.workspace.getConfiguration('gpt-context-generator');
   const outputMethod = config.get('outputMethod') as string;
+  const outputLanguage = config.get('outputLanguage') as string;
 
   const gptContext = options.markedFiles
     ? await createGPTFriendlyContext(workspacePath, options.includePackageJson ?? false, options.markedFiles)
@@ -166,7 +167,7 @@ async function handleCommand(
   if (outputMethod === 'newWindow') {
     const gptContextDocument = await vscode.workspace.openTextDocument({
       content: gptContext,
-      language: 'plaintext',
+      language: outputLanguage,
     });
 
     await vscode.window.showTextDocument(gptContextDocument, vscode.ViewColumn.One);

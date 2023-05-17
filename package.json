@@ -78,6 +78,16 @@
           "default": "clipboard",
           "description": "Output method for the generated context (New Window or Clipboard)."
         },
+        "gpt-context-generator.outputLanguage": {
+          "type": "string",
+          "enum": [
+            "plaintext",
+            "markdown"
+          ],
+          "default": "plaintext",
+          "description": "Output language for the generated context when the output method is set to New Window.",
+          "scope": "window"
+        },
         "gpt-context-generator.includePackageJson": {
           "type": "boolean",
           "default": true,
