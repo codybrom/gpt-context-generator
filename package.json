@@ -33,6 +33,22 @@
       {
         "command": "gpt-context-generator.createGPTFriendlyContext",
         "title": "Generate GPT Context (Workspace)"
+      },
+      {
+        "command": "gpt-context-generator.markFileForInclusion",
+        "title": "Mark/Unmark File for Inclusion"
+      },
+      {
+        "command": "gpt-context-generator.createGPTFriendlyContextForMarkedFiles",
+        "title": "Generate GPT Context (Marked Files)"
+      },
+      {
+        "command": "gpt-context-generator.clearMarkedFiles",
+        "title": "Clear Marked Files"
+      },
+      {
+        "command": "gpt-context-generator.unmarkFileFromTreeView",
+        "title": "Unmark"
       }
     ],
     "configuration": {
@@ -68,6 +84,24 @@
           "description": "Include package.json as part of the context (Open File Only)."
         }
       }
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "markedFilesView",
+          "name": "Marked Files",
+          "visibility": "collapsed"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "gpt-context-generator.unmarkFileFromTreeView",
+          "when": "view == markedFilesView && viewItem == markedFile",
+          "group": "inline"
+        }
+      ]
     }
   },
   "scripts": {
