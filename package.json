@@ -2,7 +2,7 @@
   "name": "gpt-context-generator",
   "displayName": "GPT Context Generator",
   "description": "Generate GPT-friendly context for files or workspaces",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -151,6 +151,5 @@
     "url": "https://github.com/codybrom/gpt-context-generator.git"
   },
   "license": "MIT",
-  "publisher": "codybrom",
-  "packageManager": "yarn@1.22.19"
+  "publisher": "codybrom"
 }
