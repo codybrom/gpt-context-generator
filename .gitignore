@@ -7,5 +7,5 @@ yarn-error.log
 .vscode-test/
 out/
 dist/
-build/
+builds/
 ignore/
