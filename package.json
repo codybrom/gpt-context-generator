@@ -130,18 +130,17 @@
   "dependencies": {
     "gpt-3-encoder": "^1.1.4",
     "ignore": "^5.2.4",
-    "prettier": "^2.8.7",
-    "prettier-airbnb-config": "^1.0.0"
+    "prettier": "^3.0.3"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "16.x",
-    "@types/vscode": "^1.77.0",
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
-    "@vscode/test-electron": "^2.3.0",
-    "eslint": "^8.36.0",
+    "@types/mocha": "^10.0.3",
+    "@types/node": "^16.18.60",
+    "@types/vscode": "^1.84.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "@vscode/test-electron": "^2.3.6",
+    "eslint": "^8.52.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
     "typescript": "^4.9.5"
@@ -151,5 +150,6 @@
     "url": "https://github.com/codybrom/gpt-context-generator.git"
   },
   "license": "MIT",
-  "publisher": "codybrom"
+  "publisher": "codybrom",
+  "packageManager": "yarn@4.0.1"
 }
