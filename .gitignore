@@ -1,11 +1,18 @@
+# Ignore macOS specific .DS_Store files
 *.DS_Store
 
+# Ignore node_modules directory and yarn error log
 node_modules
 yarn-error.log
 
+# Ignore Yarn cache and Visual Studio Code test directory
 .yarn/
 .vscode-test/
+
+# Ignore output directories
 out/
 dist/
 builds/
+
+# Ignore custom "ignore" directory (if present)
 ignore/
