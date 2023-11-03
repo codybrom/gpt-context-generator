@@ -120,13 +120,13 @@
     }
   },
   "scripts": {
-    "vscode:package": "vsce package",
-    "vscode:publish": "vsce publish",
-    "compile": "tsc -p ./",
+    "build": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "pretest": "yarn run compile && yarn run lint",
+    "test": "node ./out/test/runTest.js",
+    "vscode:package": "yarn run build && vsce package",
+    "vscode:publish": "yarn run build && vsce publish"
   },
   "dependencies": {
     "gpt-3-encoder": "^1.1.4",
