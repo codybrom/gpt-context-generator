@@ -2,9 +2,9 @@
   "name": "gpt-context-generator",
   "displayName": "GPT Context Generator",
   "description": "Generate GPT-friendly context for files or workspaces",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "engines": {
-    "vscode": "^1.77.0"
+    "vscode": "^1.84.0"
   },
   "categories": [
     "Machine Learning",
@@ -116,32 +116,39 @@
           "when": "view == markedFilesView && viewItem == markedFile",
           "group": "inline"
         }
+      ],
+      "explorer/context": [
+        {
+          "command": "gpt-context-generator.markFileForInclusion",
+          "when": "resourceScheme == 'file'",
+          "group": "navigation"
+        }
       ]
     }
   },
   "scripts": {
-    "vscode:prepublish": "yarn run compile",
-    "compile": "tsc -p ./",
+    "build": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "yarn run compile && yarn run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "pretest": "yarn run compile && yarn run lint",
+    "test": "node ./out/test/runTest.js",
+    "vscode:package": "yarn run build && vsce package --out 'builds'",
+    "vscode:publish": "yarn run build && vsce publish"
   },
   "dependencies": {
     "gpt-3-encoder": "^1.1.4",
     "ignore": "^5.2.4",
-    "prettier": "^2.8.7",
-    "prettier-airbnb-config": "^1.0.0"
+    "prettier": "^3.0.3"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "16.x",
-    "@types/vscode": "^1.77.0",
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
-    "@vscode/test-electron": "^2.3.0",
-    "eslint": "^8.36.0",
+    "@types/mocha": "^10.0.3",
+    "@types/node": "^16.18.60",
+    "@types/vscode": "^1.84.0",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "@vscode/test-electron": "^2.3.6",
+    "eslint": "^8.52.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
     "typescript": "^4.9.5"

@@ -1,10 +1,16 @@
+# Ignore Visual Studio Code related files and directories
 .vscode/**
 .vscode-test/**
+
+# Ignore source code files and directories
 src/**
+**/*.ts
+
+# Ignore configuration files
 .gitignore
 .yarnrc
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
+
+# Ignore source map files
 **/*.map
-**/*.ts

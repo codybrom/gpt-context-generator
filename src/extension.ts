@@ -7,10 +7,10 @@ import {encode} from 'gpt-3-encoder';
 const markedFiles: Set<string> = new Set();
 
 class MarkedFilesProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
-  private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> = new vscode.EventEmitter<
-    vscode.TreeItem | undefined | null | void
-  >();
-  readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<vscode.TreeItem | undefined | null | void> =
+    new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
+  readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> =
+    this._onDidChangeTreeData.event;
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
@@ -25,7 +25,7 @@ class MarkedFilesProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
       return Promise.resolve([]);
     } else {
       return Promise.resolve(
-        Array.from(markedFiles).map((filePath) => {
+        Array.from(markedFiles).map(filePath => {
           const treeItem = new vscode.TreeItem(path.basename(filePath));
           treeItem.description = path.dirname(filePath);
           treeItem.command = {
@@ -105,7 +105,10 @@ export function activate(context: vscode.ExtensionContext) {
       const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
       const config = vscode.workspace.getConfiguration('gpt-context-generator');
       const includePackageJson = (config.get('includePackageJson') as boolean) ?? false;
-      await handleCommand(workspacePath, { markedFiles: Array.from(markedFiles), includePackageJson });
+      await handleCommand(workspacePath, {
+        markedFiles: Array.from(markedFiles),
+        includePackageJson,
+      });
     }
   );
 
@@ -155,7 +158,11 @@ async function handleCommand(
   const outputLanguage = config.get('outputLanguage') as string;
 
   const gptContext = options.markedFiles
-    ? await createGPTFriendlyContext(workspacePath, options.includePackageJson ?? false, options.markedFiles)
+    ? await createGPTFriendlyContext(
+        workspacePath,
+        options.includePackageJson ?? false,
+        options.markedFiles
+      )
     : options.openFilePath
     ? await createGPTFriendlyContextForOpenFile(
         workspacePath,
@@ -257,7 +264,7 @@ async function createGPTFriendlyContext(
   } else {
     await processDirectory(workspacePath);
   }
-  
+
   return gptContext.join('\n');
 }
 
