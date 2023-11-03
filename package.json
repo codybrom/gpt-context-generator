@@ -116,6 +116,13 @@
           "when": "view == markedFilesView && viewItem == markedFile",
           "group": "inline"
         }
+      ],
+      "explorer/context": [
+        {
+          "command": "gpt-context-generator.markFileForInclusion",
+          "when": "resourceScheme == 'file'",
+          "group": "navigation"
+        }
       ]
     }
   },
