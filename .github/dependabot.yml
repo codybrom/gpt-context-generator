@@ -9,4 +9,6 @@ updates:
       interval: "weekly"
     labels:
       - "dependencies"
+    reviewers:
+      - "codybrom"
     open-pull-requests-limit: 10
