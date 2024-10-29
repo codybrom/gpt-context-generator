@@ -137,8 +137,7 @@
   },
   "dependencies": {
     "gpt-3-encoder": "^1.1.4",
-    "ignore": "^6.0.2",
-    "prettier": "^3.3.3"
+    "ignore": "^6.0.2"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
@@ -151,6 +150,7 @@
     "eslint": "^8.52.0",
     "glob": "^11.0.0",
     "mocha": "^10.7.3",
+    "prettier": "^3.3.3",
     "typescript": "^5.6.3"
   },
   "repository": {
