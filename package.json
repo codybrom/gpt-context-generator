@@ -137,7 +137,7 @@
   },
   "dependencies": {
     "gpt-3-encoder": "^1.1.4",
-    "ignore": "^6.0.2"
+    "ignore": "^7.0.0"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
