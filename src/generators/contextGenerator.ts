@@ -9,11 +9,11 @@ import {
 	getExtension,
 	resolvePath,
 	getDirname,
-} from './utils/fileUtils';
-import { formatFileComment } from './utils/markdownUtils';
-import { estimateTokenCount } from './utils/tokenUtils';
-import { extractImports } from './utils/importParser';
-import { initializeIgnoreFilter, isIgnored } from './utils/ignoreUtils';
+} from '../utils/fileUtils';
+import { formatFileComment } from '../utils/markdownUtils';
+import { estimateTokenCount } from '../utils/tokenUtils';
+import { extractImports } from '../utils/importParser';
+import { initializeIgnoreFilter, isIgnored } from '../utils/ignoreUtils';
 
 export class ContextGenerator {
 	private config: vscode.WorkspaceConfiguration;

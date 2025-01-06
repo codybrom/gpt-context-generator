@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import {
 	markedFiles,
 	MarkedFilesProvider,
-} from './providers/markedFilesProvider';
-import { createContextGenerator } from './contextGenerator';
+} from '../providers/markedFilesProvider';
+import { createContextGenerator } from '../generators/contextGenerator';
 
 export class CommandHandler {
 	constructor(private markedFilesProvider: MarkedFilesProvider) {}

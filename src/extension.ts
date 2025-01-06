@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { MarkedFilesProvider } from './providers/markedFilesProvider';
-import { CommandHandler } from './commandHandler';
+import { CommandHandler } from './commands/commandHandler';
 
 export function activate(context: vscode.ExtensionContext) {
 	const markedFilesProvider = new MarkedFilesProvider();
