@@ -1,8 +1,0 @@
-{
-	"printWidth": 92,
-	"proseWrap": "preserve",
-	"quoteProps": "as-needed",
-	"semi": true,
-	"singleQuote": true,
-	"useTabs": true
-}
