@@ -50,62 +50,70 @@ export const markFile = {
 		treeItem: TreeItem,
 		markedFilesProvider: MarkedFilesProvider,
 	) {
-		if (treeItem && treeItem.resourceUri) {
-			const filePath = treeItem.resourceUri.fsPath;
-			if (markedFiles.has(filePath)) {
-				this.unmarkFile(filePath, markedFilesProvider);
-			}
-		} else {
+		if (!treeItem?.resourceUri?.fsPath) {
 			showMessage.error('Unable to unmark file from the tree view.');
+			return;
+		}
+
+		const filePath = treeItem.resourceUri.fsPath;
+		if (markedFiles.has(filePath)) {
+			this.unmarkFile(filePath, markedFilesProvider);
 		}
 	},
 
 	async markItems(uris: Uri[], markedFilesProvider: MarkedFilesProvider) {
-		const newFiles: string[] = [];
-
-		for (const uri of uris) {
-			if (isDirectory(uri.fsPath)) {
-				// Process directory
-				await this.processDirectory(uri.fsPath, newFiles);
-			} else {
-				// Process single file
-				if (!markedFiles.has(uri.fsPath)) {
-					newFiles.push(uri.fsPath);
-				}
-			}
+		const workspacePath = workspace.workspaceFolders?.[0]?.uri.fsPath;
+		if (!workspacePath) {
+			showMessage.error('No workspace folder found.');
+			return;
 		}
 
-		if (newFiles.length === 0) {
+		const newFiles = new Set<string>();
+		await Promise.all(
+			uris.map((uri) => this.processPath(uri.fsPath, newFiles, workspacePath)),
+		);
+
+		if (newFiles.size === 0) {
 			showMessage.info('Selected items are already marked.');
 			return;
 		}
 
 		this.updateMarkedFiles(
 			() => newFiles.forEach((fsPath) => markedFiles.add(fsPath)),
-			`Marked ${newFiles.length} file(s) for inclusion`,
+			`Marked ${newFiles.size} file(s) for inclusion`,
 			markedFilesProvider,
 		);
 	},
 
-	async processDirectory(dir: string, newFiles: string[]) {
-		const files = listFiles(dir);
+	async processPath(
+		path: string,
+		newFiles: Set<string>,
+		workspacePath: string,
+	): Promise<void> {
+		if (!isDirectory(path)) {
+			if (!markedFiles.has(path)) {
+				newFiles.add(path);
+			}
+			return;
+		}
 
-		for (const file of files) {
-			const filePath = resolvePath(dir, file);
-			const relPath = getRelativePath(
-				workspace.workspaceFolders![0].uri.fsPath,
-				filePath,
+		try {
+			const files = listFiles(path);
+			await Promise.all(
+				files.map(async (file) => {
+					const filePath = resolvePath(path, file);
+					const relPath = getRelativePath(workspacePath, filePath);
+
+					if (isIgnored(relPath)) {
+						return;
+					}
+
+					await this.processPath(filePath, newFiles, workspacePath);
+				}),
 			);
-
-			if (isIgnored(relPath)) {
-				continue;
-			}
-
-			if (isDirectory(filePath)) {
-				await this.processDirectory(filePath, newFiles);
-			} else if (!markedFiles.has(filePath)) {
-				newFiles.push(filePath);
-			}
+		} catch (error) {
+			console.error(`Error processing directory ${path}:`, error);
+			showMessage.error(`Failed to process directory: ${path}`);
 		}
 	},
 };
