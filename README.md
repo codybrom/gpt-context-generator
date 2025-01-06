@@ -1,6 +1,5 @@
 # GPT Context Generator
 
-[![Code Style Airbnb](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
 [![VS Marketplace Version](https://badgen.net/vs-marketplace/v/codybrom.gpt-context-generator)](https://marketplace.visualstudio.com/items?itemName=codybrom.gpt-context-generator)
 [![VS Marketplace Installs](https://badgen.net/vs-marketplace/i/codybrom.gpt-context-generator)](https://marketplace.visualstudio.com/items?itemName=codybrom.gpt-context-generator)
 [![VS Marketplace Rating](https://badgen.net/vs-marketplace/d/codybrom.gpt-context-generator)](https://marketplace.visualstudio.com/items?itemName=codybrom.gpt-context-generator)
