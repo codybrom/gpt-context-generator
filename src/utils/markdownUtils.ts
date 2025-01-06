@@ -11,13 +11,8 @@ export const getMarkdownLang = (extension: string): string => {
 	return language?.name ?? ext;
 };
 
-export const formatFileComment = (format: string, file: FileData): string => {
-	const replacements = {
-		filePath: file.path,
-		markdownLang: `${getMarkdownLang(file.extension)} ${file.path}`,
-		fileContent: file.content,
-	};
-
-	// Return just the code block without the filename header
-	return `\`\`\`${replacements.markdownLang}\n${replacements.fileContent}\`\`\``;
+export const formatFileComment = (file: FileData): string => {
+	const markdownLang = getMarkdownLang(file.extension);
+	// Always use the standard format: filename in language specifier
+	return `\`\`\`${markdownLang} ${file.path}\n${file.content}\`\`\``;
 };

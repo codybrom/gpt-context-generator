@@ -20,8 +20,7 @@ export const showMessage = {
 	info: (message: string) => window.showInformationMessage(message),
 	error: (message: string) => window.showErrorMessage(message),
 	warning: (message: string) => window.showWarningMessage(message),
-	copySuccess: () =>
-		showMessage.info('GPT-friendly context copied to clipboard.'),
+	copySuccess: () => showMessage.info('LLM-ready context copied to clipboard.'),
 	tokenCount: (count: number) => {
 		const message = `The generated context is approximately ${count} tokens${
 			count > 8000 ? ', which is greater than 8000 tokens' : ''

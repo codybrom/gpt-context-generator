@@ -1,7 +1,7 @@
 {
 	"name": "gpt-context-generator",
-	"displayName": "GPT Context Generator",
-	"description": "Generate GPT-friendly context for files or workspaces",
+	"displayName": "LLM Context Generator",
+	"description": "Generate LLM-ready context for files or workspaces",
 	"version": "1.4.0",
 	"engines": {
 		"vscode": "^1.96.0"
@@ -28,19 +28,19 @@
 		"commands": [
 			{
 				"command": "gpt-context-generator.createGPTFriendlyContextForOpenFile",
-				"title": "Generate GPT Context (Current File + Imports)"
+				"title": "Generate LLM Context (Current File + Imports)"
 			},
 			{
 				"command": "gpt-context-generator.createGPTFriendlyContext",
-				"title": "Generate GPT Context (Workspace)"
+				"title": "Generate LLM Context (Workspace)"
 			},
 			{
 				"command": "gpt-context-generator.markFileForInclusion",
-				"title": "Mark/Unmark File for Inclusion"
+				"title": "Mark/Unmark File for LLM Context"
 			},
 			{
 				"command": "gpt-context-generator.createGPTFriendlyContextForMarkedFiles",
-				"title": "Generate GPT Context (Marked Files)"
+				"title": "Generate LLM Context (Marked Files)"
 			},
 			{
 				"command": "gpt-context-generator.clearMarkedFiles",
@@ -60,26 +60,124 @@
 			},
 			{
 				"command": "gpt-context-generator.markFilesFromExplorer",
-				"title": "Mark for GPT Context"
+				"title": "Mark for LLM Context"
 			}
 		],
 		"configuration": {
-			"title": "GPT Context Generator",
+			"title": "LLM Context Generator",
 			"properties": {
 				"gpt-context-generator.detectedFileExtensions": {
 					"type": "array",
 					"items": {
-						"type": "string"
+						"type": "string",
+						"enum": [
+							"js",
+							"jsx",
+							"ts",
+							"tsx",
+							"mjs",
+							"cjs",
+							"vue",
+							"svelte",
+							"astro",
+							"njk",
+							"liquid",
+							"py",
+							"pyi",
+							"pyw",
+							"ipynb",
+							"rb",
+							"rake",
+							"gemspec",
+							"erb",
+							"slim",
+							"haml",
+							"php",
+							"phtml",
+							"swift",
+							"m",
+							"mm",
+							"h",
+							"hpp",
+							"c",
+							"cpp",
+							"cc",
+							"cxx",
+							"rs",
+							"go",
+							"zig",
+							"html",
+							"css",
+							"scss",
+							"sass",
+							"less",
+							"java",
+							"kt",
+							"kts",
+							"gradle",
+							"plist",
+							"dart",
+							"xaml",
+							"lua",
+							"sh",
+							"bash",
+							"zsh",
+							"bat",
+							"cmd",
+							"nsh",
+							"json",
+							"yaml",
+							"yml",
+							"toml",
+							"ini",
+							"env",
+							"xcconfig",
+							"podspec",
+							"editorconfig",
+							"dockerignore",
+							"gitignore",
+							"eslintrc",
+							"prettierrc",
+							"stylelintrc",
+							"babelrc",
+							"makefile",
+							"dockerfile",
+							"k8s",
+							"md",
+							"mdx",
+							"txt",
+							"tex",
+							"svg",
+							"sql",
+							"prisma",
+							"csv",
+							"tsv",
+							"xml"
+						]
 					},
 					"default": [
 						"js",
 						"jsx",
 						"ts",
 						"tsx",
-						"mdx",
-						"json"
+						"py",
+						"rb",
+						"php",
+						"swift",
+						"java",
+						"kt",
+						"cs",
+						"html",
+						"css",
+						"json",
+						"md",
+						"txt",
+						"yml",
+						"env"
 					],
-					"description": "File extensions to be detected and included in the generated context."
+					"description": "File extensions that will be included when generating context. Supports multiple programming languages, frameworks, tools, and development workflows.",
+					"markdownDescription": "File extensions that will be included when generating context. Supports:\n\n- **JavaScript/TypeScript**: js, jsx, ts, tsx, mjs, cjs, vue, svelte, astro, njk, liquid\n- **Python**: py, pyi, pyw, ipynb\n- **Ruby**: rb, rake, gemspec, erb, slim, haml\n- **PHP**: php, phtml\n- **Swift & Objective-C**: swift, m, mm, h, hpp\n- **Systems Programming**: c, cpp, cc, cxx, rs, go, zig\n- **Web/Styling**: html, css, scss, sass, less\n- **Mobile & Cross-Platform**: java, kt, kts, gradle, plist, dart, xaml\n- **Shell & Scripts**: sh, bash, zsh, bat, cmd, nsh\n- **Data/Config**: json, yaml, yml, toml, ini, env, xcconfig, podspec, editorconfig, dockerignore, gitignore, eslintrc, prettierrc, stylelintrc, babelrc\n- **Build & Deploy**: makefile, dockerfile, k8s\n- **Documentation**: md, mdx, txt, tex\n- **Graphics**: svg\n- **Query Languages**: sql, prisma\n- **Data Formats**: csv, tsv, xml",
+					"order": 1
 				},
 				"gpt-context-generator.outputMethod": {
 					"type": "string",
@@ -104,11 +202,6 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Include package.json as part of the context (Open File Only)."
-				},
-				"gpt-context-generator.fileCommentFormat": {
-					"type": "string",
-					"default": "{filePath}\\n```{markdownLang}\\n{fileContent}\\n```",
-					"description": "The format of the file comment in the generated context. Use {filePath}, {markdownLang}, and {fileContent} as placeholders."
 				}
 			}
 		},

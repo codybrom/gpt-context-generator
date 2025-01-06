@@ -25,14 +25,12 @@ import {
 export class ContextGenerator {
 	private config: WorkspaceConfiguration;
 	private detectedFileExtensions: string[];
-	private format: string;
 
 	constructor(private workspacePath: string) {
 		this.config = workspace.getConfiguration('gpt-context-generator');
 		this.detectedFileExtensions = this.config.get(
 			'detectedFileExtensions',
 		) as string[];
-		this.format = this.config.get('fileCommentFormat') as string;
 		initializeIgnoreFilter(workspacePath);
 	}
 
@@ -58,9 +56,7 @@ export class ContextGenerator {
 			await window.showTextDocument(document, ViewColumn.One);
 		} else if (outputMethod === 'clipboard') {
 			await env.clipboard.writeText(content);
-			window.showInformationMessage(
-				'GPT-friendly context copied to clipboard.',
-			);
+			window.showInformationMessage('LLM-ready context copied to clipboard.');
 		}
 	}
 
@@ -201,7 +197,7 @@ export class ContextGenerator {
 		const fileExtension = getExtension(filePath);
 		if (this.detectedFileExtensions.includes(fileExtension)) {
 			const fileData = this.createFileData(filePath, relPath);
-			contextParts.push(`${formatFileComment(this.format, fileData)}\n\n`);
+			contextParts.push(`${formatFileComment(fileData)}\n\n`);
 		}
 	}
 
@@ -213,7 +209,7 @@ export class ContextGenerator {
 				extension: 'json',
 				content,
 			};
-			contextParts.push(`${formatFileComment(this.format, fileData)}\n\n`);
+			contextParts.push(`${formatFileComment(fileData)}\n\n`);
 		}
 	}
 }
