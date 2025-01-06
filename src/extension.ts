@@ -1,47 +1,18 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import ignore from 'ignore';
-import { encode } from 'gpt-3-encoder';
-
-const markedFiles = new Set<string>();
-
-class MarkedFilesProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
-	private _onDidChangeTreeData: vscode.EventEmitter<
-		vscode.TreeItem | undefined | null | void
-	> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
-	readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> =
-		this._onDidChangeTreeData.event;
-
-	refresh(): void {
-		this._onDidChangeTreeData.fire();
-	}
-
-	getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
-		return element;
-	}
-
-	getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
-		if (element) {
-			return Promise.resolve([]);
-		} else {
-			return Promise.resolve(
-				Array.from(markedFiles).map((filePath) => {
-					const treeItem = new vscode.TreeItem(path.basename(filePath));
-					treeItem.description = path.dirname(filePath);
-					treeItem.command = {
-						command: 'vscode.open',
-						title: 'Open Marked File',
-						arguments: [vscode.Uri.file(filePath)],
-					};
-					treeItem.contextValue = 'markedFile';
-					treeItem.resourceUri = vscode.Uri.file(filePath);
-					return treeItem;
-				}),
-			);
-		}
-	}
-}
+import {
+	readFileContent,
+	listFiles,
+	isDirectory,
+	fileExists,
+	readPackageJson,
+	initializeIgnoreFilter,
+	isIgnored,
+} from './fileUtils';
+import { formatFileComment, getMarkdownLang } from './markdownUtils';
+import { estimateTokenCount } from './tokenUtils';
+import { markedFiles, MarkedFilesProvider } from './treeProvider';
+import { extractImports } from './importParser';
 
 export function activate(context: vscode.ExtensionContext) {
 	const markedFilesProvider = new MarkedFilesProvider();
@@ -205,39 +176,30 @@ async function createGPTFriendlyContext(
 	includePackageJson: boolean,
 	markedFiles?: string[],
 ): Promise<string> {
-	const gitIgnorePath = path.join(workspacePath, '.gitignore');
-	const ignoreFilter = ignore();
-
-	if (fs.existsSync(gitIgnorePath)) {
-		const gitIgnoreContent = fs.readFileSync(gitIgnorePath).toString();
-		ignoreFilter.add(gitIgnoreContent);
-	}
-
+	initializeIgnoreFilter(workspacePath);
 	const gptContext: string[] = [];
 	const config = vscode.workspace.getConfiguration('gpt-context-generator');
 	const detectedFileExtensions = config.get('detectedFileExtensions') as string[];
 	const format = config.get('fileCommentFormat') as string;
 
 	const processDirectory = async (dir: string) => {
-		const files = fs.readdirSync(dir);
+		const files = listFiles(dir);
 
 		for (const file of files) {
 			const filePath = path.join(dir, file);
 			const relFilePath = path.relative(workspacePath, filePath);
 
-			if (ignoreFilter.ignores(relFilePath)) {
+			if (isIgnored(relFilePath)) {
 				continue;
 			}
 
-			const fileStat = fs.lstatSync(filePath);
-
-			if (fileStat.isDirectory()) {
+			if (isDirectory(filePath)) {
 				await processDirectory(filePath);
-			} else if (fileStat.isFile()) {
+			} else {
 				const fileExtension = path.extname(filePath).toLowerCase().substring(1);
 
 				if (detectedFileExtensions.includes(fileExtension)) {
-					const fileContent = fs.readFileSync(filePath).toString();
+					const fileContent = readFileContent(filePath);
 					const fileComment = formatFileComment(
 						format,
 						relFilePath,
@@ -253,15 +215,14 @@ async function createGPTFriendlyContext(
 	const processMarkedFiles = async (files: string[]) => {
 		for (const filePath of files) {
 			const relFilePath = path.relative(workspacePath, filePath);
-			if (ignoreFilter.ignores(relFilePath)) {
+			if (isIgnored(relFilePath)) {
 				continue;
 			}
 
-			const fileStat = fs.lstatSync(filePath);
-			if (fileStat.isFile()) {
+			if (!isDirectory(filePath)) {
 				const fileExtension = path.extname(filePath).toLowerCase().substring(1);
 				if (detectedFileExtensions.includes(fileExtension)) {
-					const fileContent = fs.readFileSync(filePath).toString();
+					const fileContent = readFileContent(filePath);
 					const fileComment = formatFileComment(
 						format,
 						relFilePath,
@@ -283,41 +244,20 @@ async function createGPTFriendlyContext(
 	return gptContext.join('\n');
 }
 
-const extractImports = (content: string): string[] => {
-	const regex =
-		/import\s+(?:[a-zA-Z0-9_{}\s*]*\s+from\s+)?['"]([^'"]+)['"]|import\(['"]([^'"]+)['"]\)/g;
-	const imports: string[] = [];
-	let match: RegExpExecArray | null;
 
-	while ((match = regex.exec(content)) !== null) {
-		const importPath = match[1] ?? match[2];
-		if (importPath) {
-			imports.push(importPath);
-		}
-	}
-
-	return imports;
-};
 
 async function createGPTFriendlyContextForOpenFile(
-	workspacePath: string,
-	openFilePath: string,
-	includePackageJson: boolean,
+    workspacePath: string,
+    openFilePath: string,
+    includePackageJson: boolean,
 ): Promise<string> {
-	const gitIgnorePath = path.join(workspacePath, '.gitignore');
-	const ignoreFilter = ignore();
+    initializeIgnoreFilter(workspacePath);  // Initialize the ignore filter
+    const gptContext: string[] = [];
+    const config = vscode.workspace.getConfiguration('gpt-context-generator');
+    const detectedFileExtensions = config.get('detectedFileExtensions') as string[];
+    const format = config.get('fileCommentFormat') as string;
 
-	if (fs.existsSync(gitIgnorePath)) {
-		const gitIgnoreContent = fs.readFileSync(gitIgnorePath).toString();
-		ignoreFilter.add(gitIgnoreContent);
-	}
-
-	const gptContext: string[] = [];
-	const config = vscode.workspace.getConfiguration('gpt-context-generator');
-	const detectedFileExtensions = config.get('detectedFileExtensions') as string[];
-	const format = config.get('fileCommentFormat') as string;
-
-	const openFileContent = fs.readFileSync(openFilePath).toString();
+	const openFileContent = readFileContent(openFilePath);
 	const openFileRelPath = path.relative(workspacePath, openFilePath);
 	const openFileExtension = path.extname(openFilePath).toLowerCase().substring(1);
 
@@ -331,14 +271,14 @@ async function createGPTFriendlyContextForOpenFile(
 		gptContext.push(`${fileComment}\n\n`);
 	}
 
-	const imports = extractImports(openFileContent);
-	for (const importPath of imports) {
-		const resolvedImportPath = path.resolve(path.dirname(openFilePath), importPath);
-		const relImportPath = path.relative(workspacePath, resolvedImportPath);
+    const imports = extractImports(openFileContent);
+    for (const importPath of imports) {
+        const resolvedImportPath = path.resolve(path.dirname(openFilePath), importPath);
+        const relImportPath = path.relative(workspacePath, resolvedImportPath);
 
-		if (ignoreFilter.ignores(relImportPath)) {
-			continue;
-		}
+        if (isIgnored(relImportPath)) {
+            continue;
+        }
 
 		const importFileExtension = path.extname(resolvedImportPath).toLowerCase().substring(1);
 
@@ -348,8 +288,8 @@ async function createGPTFriendlyContextForOpenFile(
 				const importFilePathWithExt = `${resolvedImportPath}.${ext}`;
 				const relImportPathWithExt = path.relative(workspacePath, importFilePathWithExt);
 
-				if (fs.existsSync(importFilePathWithExt)) {
-					const importedFileContent = fs.readFileSync(importFilePathWithExt).toString();
+				if (fileExists(importFilePathWithExt)) {
+					const importedFileContent = readFileContent(importFilePathWithExt);
 					const fileComment = formatFileComment(
 						format,
 						relImportPathWithExt,
@@ -362,9 +302,9 @@ async function createGPTFriendlyContextForOpenFile(
 			}
 		} else if (
 			detectedFileExtensions.includes(importFileExtension) &&
-			fs.existsSync(resolvedImportPath)
+			fileExists(resolvedImportPath)
 		) {
-			const importedFileContent = fs.readFileSync(resolvedImportPath).toString();
+			const importedFileContent = readFileContent(resolvedImportPath);
 			const fileComment = formatFileComment(
 				format,
 				relImportPath,
@@ -376,9 +316,8 @@ async function createGPTFriendlyContextForOpenFile(
 	}
 
 	if (includePackageJson) {
-		const packageJsonPath = path.join(workspacePath, 'package.json');
-		if (fs.existsSync(packageJsonPath)) {
-			const packageJsonContent = fs.readFileSync(packageJsonPath).toString();
+		const packageJsonContent = readPackageJson(workspacePath);
+		if (packageJsonContent) {
 			const fileComment = formatFileComment(
 				format,
 				'package.json',
@@ -390,37 +329,6 @@ async function createGPTFriendlyContextForOpenFile(
 	}
 
 	return gptContext.join('\n');
-}
-
-function estimateTokenCount(text: string): number {
-	const encoded = encode(text);
-	return encoded.length;
-}
-
-function getMarkdownLang(fileExtension: string): string {
-	switch (fileExtension) {
-		case 'js':
-			return 'javascript';
-		case 'ts':
-			return 'typescript';
-		case 'md':
-			return 'markdown';
-		default:
-			return fileExtension;
-	}
-}
-
-function formatFileComment(
-	format: string,
-	filePath: string,
-	fileExtension: string,
-	fileContent: string,
-): string {
-	return format
-		.replace(/\\n/g, '\n')
-		.replace('{filePath}', filePath)
-		.replace('{markdownLang}', getMarkdownLang(fileExtension))
-		.replace('{fileContent}', fileContent);
 }
 
 export function deactivate() {}
