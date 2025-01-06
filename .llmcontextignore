@@ -1,0 +1,10 @@
+# VSCode Settings
+.vscode/**
+
+# Community Files
+CODE_OF_CONDUCT.md
+LICENSE
+
+# Dependency Management
+.yarnrc
+yarn.lock
