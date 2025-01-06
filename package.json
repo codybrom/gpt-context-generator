@@ -2,7 +2,7 @@
 	"name": "gpt-context-generator",
 	"displayName": "GPT Context Generator",
 	"description": "Generate GPT-friendly context for files or workspaces",
-	"version": "0.3.0",
+	"version": "1.4.0",
 	"engines": {
 		"vscode": "^1.96.0"
 	},
