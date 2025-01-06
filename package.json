@@ -130,7 +130,7 @@
 		"build": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"lint": "eslint src --ext ts",
-		"pretest": "yarn run compile && yarn run lint",
+		"pretest": "yarn run build && yarn run lint",
 		"test": "node ./out/test/runTest.js",
 		"vscode:package": "yarn run build && vsce package --out 'builds'",
 		"vscode:publish": "yarn run build && vsce publish"
