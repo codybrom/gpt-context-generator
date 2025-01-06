@@ -25,14 +25,16 @@ pulling in local dependencies such as API pages that are referenced in your code
 1.  Open a file in Visual Studio Code.
 2.  Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
 3.  Type `Generate GPT Context (Current File + Imports)` and select the command from the list.
-4.  The generated context, including dependencies, will be displayed in a new editor tab or copied to the clipboard based on your configuration.
+4.  The generated context, including dependencies, will be displayed in a new editor tab or copied
+    to the clipboard based on your configuration.
 
 ### Generate context for the entire workspace
 
 1.  Open a workspace in Visual Studio Code.
 2.  Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
 3.  Type `Generate GPT Context (Workspace)` and select the command from the list.
-4.  The generated context will be displayed in a new editor tab or copied to the clipboard based on your configuration.
+4.  The generated context will be displayed in a new editor tab or copied to the clipboard based on
+    your configuration.
 
 ### Generate context for marked files
 
@@ -42,7 +44,8 @@ pulling in local dependencies such as API pages that are referenced in your code
 4. Repeat steps 1-3 for all files you want to include in the context.
 5. Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
 6. Type `Generate GPT Context (Marked Files)` and select the command from the list.
-7. The generated context for marked files will be displayed in a new editor tab or copied to the clipboard based on your configuration.
+7. The generated context for marked files will be displayed in a new editor tab or copied to the
+   clipboard based on your configuration.
 
 ## Token Count Estimation
 

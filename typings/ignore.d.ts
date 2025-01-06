@@ -1,10 +1,10 @@
 declare module 'ignore' {
-  interface Ignore {
-    add(pattern: string | ReadonlyArray<string>): this;
-    ignores(pathname: string): boolean;
-  }
+	interface Ignore {
+		add(pattern: string | ReadonlyArray<string>): this;
+		ignores(pathname: string): boolean;
+	}
 
-  function createIgnore(): Ignore;
+	function createIgnore(): Ignore;
 
-  export = createIgnore;
+	export = createIgnore;
 }

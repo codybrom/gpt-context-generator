@@ -1,10 +1,9 @@
 {
-  "files.exclude": {
-    "out": false
-  },
-  "search.exclude": {
-    "out": true
-  },
-  "typescript.tsc.autoDetect": "off",
-  "prettier.configPath": ".prettierrc"
+	"files.exclude": {
+		"out": false
+	},
+	"search.exclude": {
+		"out": true
+	},
+	"prettier.configPath": ".prettierrc.json"
 }
