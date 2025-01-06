@@ -1,8 +1,9 @@
 {
-	"name": "gpt-context-generator",
 	"displayName": "LLM Context Generator",
+	"publisher": "codybrom",
+	"name": "gpt-context-generator",
 	"description": "Generate LLM-ready context for files or workspaces",
-	"version": "1.4.0",
+	"version": "1.4.1",
 	"engines": {
 		"vscode": "^1.96.0"
 	},
@@ -22,7 +23,10 @@
 		"generator",
 		"context"
 	],
-	"activationEvents": [],
+	"files": [
+		"out/**/*",
+		"!out/**/*.map"
+	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
@@ -228,7 +232,9 @@
 				{
 					"id": "markedFilesView",
 					"name": "Marked Files",
-					"visibility": "collapsed"
+					"icon": "images/list.svg",
+					"contextualTitle": "Marked Files for LLM Context",
+					"type": "tree"
 				}
 			]
 		},
@@ -268,7 +274,7 @@
 		}
 	},
 	"scripts": {
-		"build": "esbuild src/extension.ts --bundle --outdir=out --platform=node --format=cjs --sourcemap --external:vscode",
+		"build": "esbuild src/extension.ts --bundle --outdir=out --platform=node --format=cjs --sourcemap --external:vscode && node -r esbuild-register src/build/copyWasm.ts",
 		"watch": "esbuild src/extension.ts --bundle --outdir=out --platform=node --format=cjs --sourcemap --external:vscode --watch",
 		"lint": "eslint src",
 		"pretest": "yarn run build && yarn run lint",
@@ -292,6 +298,7 @@
 		"@typescript-eslint/parser": "^5.62.0",
 		"@vscode/test-electron": "^2.4.1",
 		"esbuild": "^0.24.2",
+		"esbuild-register": "^3.6.0",
 		"eslint": "^9.17.0",
 		"glob": "^11.0.0",
 		"mocha": "^11.0.1",
@@ -306,8 +313,11 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/codybrom/gpt-context-generator.git"
+		"url": "https://github.com/codybrom/llm-context-generator.git"
 	},
-	"license": "MIT",
-	"publisher": "codybrom"
+	"homepage": "https://github.com/codybrom/llm-context-generator",
+	"bugs": {
+		"url": "https://github.com/codybrom/llm-context-generator/issues"
+	},
+	"license": "MIT"
 }

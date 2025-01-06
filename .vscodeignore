@@ -17,3 +17,6 @@ src/**
 
 # Ignore dependencies
 node_modules/**
+
+# Do not ignore the following files
+!out/tiktoken_bg.wasm

@@ -1,3 +1,4 @@
+import { initializeTokenUtils } from './utils/tokenUtils';
 import { MarkedFilesProvider } from './providers/markedFilesProvider';
 import { createContext } from './commands/createContext';
 import { markFile } from './commands/markFile';
@@ -5,6 +6,8 @@ import { clearMarkedFiles } from './commands/clearMarkedFiles';
 import { commands, ExtensionContext, TreeItem, Uri, window } from 'vscode';
 
 export function activate(context: ExtensionContext) {
+	initializeTokenUtils(context);
+
 	const markedFilesProvider = new MarkedFilesProvider();
 
 	window.registerTreeDataProvider('markedFilesView', markedFilesProvider);
