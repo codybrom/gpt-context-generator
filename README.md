@@ -1,69 +1,96 @@
-# GPT Context Generator
+# LLM Context Generator
 
-[![Code Style Airbnb](https://badgen.net/badge/code%20style/airbnb/ff5a5f?icon=airbnb)](https://github.com/airbnb/javascript)
 [![VS Marketplace Version](https://badgen.net/vs-marketplace/v/codybrom.gpt-context-generator)](https://marketplace.visualstudio.com/items?itemName=codybrom.gpt-context-generator)
 [![VS Marketplace Installs](https://badgen.net/vs-marketplace/i/codybrom.gpt-context-generator)](https://marketplace.visualstudio.com/items?itemName=codybrom.gpt-context-generator)
 [![VS Marketplace Rating](https://badgen.net/vs-marketplace/d/codybrom.gpt-context-generator)](https://marketplace.visualstudio.com/items?itemName=codybrom.gpt-context-generator)
 
-This Visual Studio Code extension helps you generate context for .js/.jsx and .ts/.tsx files, making
-it easier to collaborate with AI models like OpenAI's GPT-4. The extension generates context by
-pulling in local dependencies such as API pages that are referenced in your code. It also respects
-`.gitignore` rules to avoid including unnecessary files.
+This Visual Studio Code extension helps you generate LLM-ready context from your workspace files, making it easier to collaborate with AI models. The extension can automatically reference local code dependencies and respects your `.gitignore` rules to avoid including unnecessary files.
 
 ## Features
 
-- Generate GPT-compatible multi-file context from the currently open file and local imports
-- Generate GPT-compatible multi-file context of the entire VS Code workspace
-- Generate GPT-compatible multi-file context for marked files
-- Mark/Unmark files for inclusion in generated context
-- Estimate the number of OpenAI tokens in the generated context
+- Generate LLM-ready context from the currently open file and its imports, your entire VS Code workspace or marked files
+- Mark or unmark open files via Command Palette, or individual files and folders via the Explorer context menu
+- Automatic file tracking updates marked files when they're moved or deleted
+- Token count estimation for generated context
+- Automatic support for multiple programming languages and file types
 
 ## Usage
 
-### Generate context for the currently open file and its local imports
+### Mark Files for Context
 
-1.  Open a file in Visual Studio Code.
-2.  Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
-3.  Type `Generate GPT Context (Current File + Imports)` and select the command from the list.
-4.  The generated context, including dependencies, will be displayed in a new editor tab or copied to the clipboard based on your configuration.
+1. **Via Explorer**:
+   - Right-click on one or more files or folders in the Explorer
+   - Select "Mark for LLM Context"
+   - Files appear in the Marked Files view
+   - Marking a folder includes all compatible files within it
 
-### Generate context for the entire workspace
+2. **Via Command Palette**:
+   - Open a file
+   - Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac)
+   - Select "Mark/Unmark File for LLM Context"
 
-1.  Open a workspace in Visual Studio Code.
-2.  Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
-3.  Type `Generate GPT Context (Workspace)` and select the command from the list.
-4.  The generated context will be displayed in a new editor tab or copied to the clipboard based on your configuration.
+### Generate Context
 
-### Generate context for marked files
+Three ways to generate context:
 
-1. Open a file in Visual Studio Code.
-2. Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
-3. Type `Mark/Unmark File for Inclusion` and select the command to mark the file for inclusion.
-4. Repeat steps 1-3 for all files you want to include in the context.
-5. Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
-6. Type `Generate GPT Context (Marked Files)` and select the command from the list.
-7. The generated context for marked files will be displayed in a new editor tab or copied to the clipboard based on your configuration.
+1. **Current File + Imports**:
+   - Open a file
+   - Command Palette → "Generate LLM Context (Current File + Imports)"
+
+2. **Workspace**:
+   - Open a workspace
+   - Command Palette → "Generate LLM Context (Workspace)"
+
+3. **Marked Files**:
+   - Mark desired files
+   - Command Palette → "Generate LLM Context (Marked Files)"
+
+The generated context will be copied to your clipboard or opened in a new window, based on your settings.
 
 ## Token Count Estimation
 
-When generating context, the extension will also display an information message with an estimated
-number of OpenAI tokens in the generated text. This information can be helpful when working with AI
-models that have token limitations.
+After generating context, you'll see an estimated token count. This helps you stay within AI model token limits. A warning appears if the context exceeds 8,000 tokens.
 
 ## Configuration
 
-From settings, you can configure the extension to work as you prefer.
+Configure the extension in VS Code settings:
 
-- **Output method**
-  - Copy to Clipboard (_default_)
-  - New Window
-- **Output language** (only applies when 'outputMethod' is set to 'newWindow')
-  - Plaintext (_default_)
-  - Markdown
-- **Include package.json in open-file context** (_default: true_)
-- **Set File Extensions to Include in Workspace Context**
-  - _defaults: js, jsx, ts, tsx, mdx, json_
+- **Detected File Extensions**
+  - Customize which file types to include
+  - Supports many languages and formats:
+    - JavaScript/TypeScript (js, jsx, ts, tsx, etc.)
+    - Python (py, pyi, pyw, ipynb)
+    - Ruby (rb, rake, erb, etc.)
+    - PHP (php, phtml)
+    - Swift/Objective-C (swift, m, h, etc.)
+    - Systems (c, cpp, rs, go, etc.)
+    - Web (html, css, scss, etc.)
+    - Mobile (java, kt, dart, etc.)
+    - Configuration (json, yaml, toml, etc.)
+    - And more...
+
+- **Ignore Files**
+  - Files containing ignore patterns (like .gitignore)
+  - Default: `.gitignore`, `.dockerignore`
+  - Patterns from each file are used to exclude matching files from context
+  - Files are processed in order, and missing files are safely skipped
+
+- **Token Warning Threshold**
+  - Token count threshold for showing warnings
+  - Default: `8000`
+
+- **Output Method**
+  - `clipboard`: Copy to clipboard (default)
+  - `newWindow`: Open in new editor
+
+- **Output Format** (for newWindow only)
+  - `plaintext`: Plain text (default)
+  - `markdown`: Markdown formatting
+
+- **Include package.json** (for open file context only)
+  - Include package.json when generating context for open file
+  - Default: `true`
 
 ## License
 
-This extension is released under the MIT License.
+Released under the MIT License.

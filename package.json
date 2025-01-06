@@ -1,162 +1,313 @@
 {
-  "name": "gpt-context-generator",
-  "displayName": "GPT Context Generator",
-  "description": "Generate GPT-friendly context for files or workspaces",
-  "version": "0.3.0",
-  "engines": {
-    "vscode": "^1.84.0"
-  },
-  "categories": [
-    "Machine Learning",
-    "Other"
-  ],
-  "icon": "images/icon.png",
-  "galleryBanner": {
-    "color": "#1F5738",
-    "theme": "dark"
-  },
-  "keywords": [
-    "gpt-4",
-    "gpt",
-    "openai",
-    "generator",
-    "context"
-  ],
-  "activationEvents": [],
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "gpt-context-generator.createGPTFriendlyContextForOpenFile",
-        "title": "Generate GPT Context (Current File + Imports)"
-      },
-      {
-        "command": "gpt-context-generator.createGPTFriendlyContext",
-        "title": "Generate GPT Context (Workspace)"
-      },
-      {
-        "command": "gpt-context-generator.markFileForInclusion",
-        "title": "Mark/Unmark File for Inclusion"
-      },
-      {
-        "command": "gpt-context-generator.createGPTFriendlyContextForMarkedFiles",
-        "title": "Generate GPT Context (Marked Files)"
-      },
-      {
-        "command": "gpt-context-generator.clearMarkedFiles",
-        "title": "Clear Marked Files"
-      },
-      {
-        "command": "gpt-context-generator.unmarkFileFromTreeView",
-        "title": "Unmark"
-      }
-    ],
-    "configuration": {
-      "title": "GPT Context Generator",
-      "properties": {
-        "gpt-context-generator.detectedFileExtensions": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "js",
-            "jsx",
-            "ts",
-            "tsx",
-            "mdx",
-            "json"
-          ],
-          "description": "File extensions to be detected and included in the generated context."
-        },
-        "gpt-context-generator.outputMethod": {
-          "type": "string",
-          "enum": [
-            "newWindow",
-            "clipboard"
-          ],
-          "default": "clipboard",
-          "description": "Output method for the generated context (New Window or Clipboard)."
-        },
-        "gpt-context-generator.outputLanguage": {
-          "type": "string",
-          "enum": [
-            "plaintext",
-            "markdown"
-          ],
-          "default": "plaintext",
-          "description": "Output language for the generated context when the output method is set to New Window.",
-          "scope": "window"
-        },
-        "gpt-context-generator.includePackageJson": {
-          "type": "boolean",
-          "default": true,
-          "description": "Include package.json as part of the context (Open File Only)."
-        },
-        "gpt-context-generator.fileCommentFormat": {
-          "type": "string",
-          "default": "{filePath}\\n```{markdownLang}\\n{fileContent}\\n```",
-          "description": "The format of the file comment in the generated context. Use {filePath}, {markdownLang}, and {fileContent} as placeholders."
-        }
-      }
-    },
-    "views": {
-      "explorer": [
-        {
-          "id": "markedFilesView",
-          "name": "Marked Files",
-          "visibility": "collapsed"
-        }
-      ]
-    },
-    "menus": {
-      "view/item/context": [
-        {
-          "command": "gpt-context-generator.unmarkFileFromTreeView",
-          "when": "view == markedFilesView && viewItem == markedFile",
-          "group": "inline"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "gpt-context-generator.markFileForInclusion",
-          "when": "resourceScheme == 'file'",
-          "group": "navigation"
-        }
-      ]
-    }
-  },
-  "scripts": {
-    "build": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "lint": "eslint src --ext ts",
-    "pretest": "yarn run compile && yarn run lint",
-    "test": "node ./out/test/runTest.js",
-    "vscode:package": "yarn run build && vsce package --out 'builds'",
-    "vscode:publish": "yarn run build && vsce publish"
-  },
-  "dependencies": {
-    "gpt-3-encoder": "^1.1.4",
-    "ignore": "^7.0.0"
-  },
-  "devDependencies": {
-    "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^22.10.5",
-    "@types/vscode": "^1.96.0",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "@vscode/test-electron": "^2.4.1",
-    "eslint": "^8.52.0",
-    "glob": "^11.0.0",
-    "mocha": "^11.0.1",
-    "prettier": "^3.4.2",
-    "typescript": "^5.7.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/codybrom/gpt-context-generator.git"
-  },
-  "license": "MIT",
-  "publisher": "codybrom"
+	"name": "gpt-context-generator",
+	"displayName": "LLM Context Generator",
+	"description": "Generate LLM-ready context for files or workspaces",
+	"version": "1.4.0",
+	"engines": {
+		"vscode": "^1.96.0"
+	},
+	"categories": [
+		"Machine Learning",
+		"Other"
+	],
+	"icon": "images/icon.png",
+	"galleryBanner": {
+		"color": "#1F5738",
+		"theme": "dark"
+	},
+	"keywords": [
+		"gpt-4",
+		"gpt",
+		"openai",
+		"generator",
+		"context"
+	],
+	"activationEvents": [],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "gpt-context-generator.createGPTFriendlyContextForOpenFile",
+				"title": "Generate LLM Context (Current File + Imports)"
+			},
+			{
+				"command": "gpt-context-generator.createGPTFriendlyContext",
+				"title": "Generate LLM Context (Workspace)"
+			},
+			{
+				"command": "gpt-context-generator.markFileForInclusion",
+				"title": "Mark/Unmark File for LLM Context"
+			},
+			{
+				"command": "gpt-context-generator.createGPTFriendlyContextForMarkedFiles",
+				"title": "Generate LLM Context (Marked Files)"
+			},
+			{
+				"command": "gpt-context-generator.clearMarkedFiles",
+				"title": "Clear Marked Files",
+				"icon": {
+					"light": "images/clear-light.svg",
+					"dark": "images/clear-dark.svg"
+				}
+			},
+			{
+				"command": "gpt-context-generator.unmarkFileFromTreeView",
+				"title": "Clear Marked File",
+				"icon": {
+					"light": "images/clear-light.svg",
+					"dark": "images/clear-dark.svg"
+				}
+			},
+			{
+				"command": "gpt-context-generator.markFilesFromExplorer",
+				"title": "Mark for LLM Context"
+			}
+		],
+		"configuration": {
+			"title": "LLM Context Generator",
+			"properties": {
+				"gpt-context-generator.detectedFileExtensions": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"enum": [
+							"js",
+							"jsx",
+							"ts",
+							"tsx",
+							"mjs",
+							"cjs",
+							"vue",
+							"svelte",
+							"astro",
+							"njk",
+							"liquid",
+							"py",
+							"pyi",
+							"pyw",
+							"ipynb",
+							"rb",
+							"rake",
+							"gemspec",
+							"erb",
+							"slim",
+							"haml",
+							"php",
+							"phtml",
+							"swift",
+							"m",
+							"mm",
+							"h",
+							"hpp",
+							"c",
+							"cpp",
+							"cc",
+							"cxx",
+							"rs",
+							"go",
+							"zig",
+							"html",
+							"css",
+							"scss",
+							"sass",
+							"less",
+							"java",
+							"kt",
+							"kts",
+							"gradle",
+							"plist",
+							"dart",
+							"xaml",
+							"lua",
+							"sh",
+							"bash",
+							"zsh",
+							"bat",
+							"cmd",
+							"nsh",
+							"json",
+							"yaml",
+							"yml",
+							"toml",
+							"ini",
+							"env",
+							"xcconfig",
+							"podspec",
+							"editorconfig",
+							"dockerignore",
+							"gitignore",
+							"eslintrc",
+							"prettierrc",
+							"stylelintrc",
+							"babelrc",
+							"makefile",
+							"dockerfile",
+							"k8s",
+							"md",
+							"mdx",
+							"txt",
+							"tex",
+							"svg",
+							"sql",
+							"prisma",
+							"csv",
+							"tsv",
+							"xml"
+						]
+					},
+					"default": [
+						"js",
+						"jsx",
+						"ts",
+						"tsx",
+						"py",
+						"rb",
+						"php",
+						"swift",
+						"java",
+						"kt",
+						"cs",
+						"html",
+						"css",
+						"json",
+						"md",
+						"txt",
+						"yml",
+						"env"
+					],
+					"description": "File extensions that will be included when generating context. Supports multiple programming languages, frameworks, tools, and development workflows.",
+					"markdownDescription": "File extensions that will be included when generating context. Supports:\n\n- **JavaScript/TypeScript**: js, jsx, ts, tsx, mjs, cjs, vue, svelte, astro, njk, liquid\n- **Python**: py, pyi, pyw, ipynb\n- **Ruby**: rb, rake, gemspec, erb, slim, haml\n- **PHP**: php, phtml\n- **Swift & Objective-C**: swift, m, mm, h, hpp\n- **Systems Programming**: c, cpp, cc, cxx, rs, go, zig\n- **Web/Styling**: html, css, scss, sass, less\n- **Mobile & Cross-Platform**: java, kt, kts, gradle, plist, dart, xaml\n- **Shell & Scripts**: sh, bash, zsh, bat, cmd, nsh\n- **Data/Config**: json, yaml, yml, toml, ini, env, xcconfig, podspec, editorconfig, dockerignore, gitignore, eslintrc, prettierrc, stylelintrc, babelrc\n- **Build & Deploy**: makefile, dockerfile, k8s\n- **Documentation**: md, mdx, txt, tex\n- **Graphics**: svg\n- **Query Languages**: sql, prisma\n- **Data Formats**: csv, tsv, xml",
+					"order": 1
+				},
+				"gpt-context-generator.outputMethod": {
+					"type": "string",
+					"enum": [
+						"newWindow",
+						"clipboard"
+					],
+					"default": "clipboard",
+					"description": "Output method for the generated context (New Window or Clipboard)."
+				},
+				"gpt-context-generator.outputLanguage": {
+					"type": "string",
+					"enum": [
+						"plaintext",
+						"markdown"
+					],
+					"default": "plaintext",
+					"description": "Output language for the generated context when the output method is set to New Window.",
+					"scope": "window"
+				},
+				"gpt-context-generator.includePackageJson": {
+					"type": "boolean",
+					"default": true,
+					"description": "Include package.json as part of the context (Open File Only)."
+				},
+				"gpt-context-generator.tokenWarningThreshold": {
+					"type": "number",
+					"default": 8000,
+					"description": "Token count threshold for showing warnings. Default is 8000 tokens."
+				},
+				"gpt-context-generator.ignoreFiles": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						".gitignore",
+						".dockerignore"
+					],
+					"description": "Specify files that contain ignore patterns (like .gitignore). Each file's patterns will be used to exclude matching files from the generated context. Files are processed in order, and it's okay if a listed ignore file doesn't exist.",
+					"markdownDescription": "Specify files that contain ignore patterns. Each file's patterns will be used to exclude matching files from the generated context.\n\n**Examples:**\n- `.gitignore`\n- `.dockerignore`\n- `prettier.ignore`\n\nFiles are processed in order, and it's okay if some files don't exist.",
+					"order": 2
+				}
+			}
+		},
+		"views": {
+			"explorer": [
+				{
+					"id": "markedFilesView",
+					"name": "Marked Files",
+					"visibility": "collapsed"
+				}
+			]
+		},
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "gpt-context-generator.unmarkFileFromTreeView",
+					"when": "view == markedFilesView && viewItem == markedFile",
+					"group": "inline"
+				}
+			],
+			"view/title": [
+				{
+					"command": "gpt-context-generator.clearMarkedFiles",
+					"when": "view == markedFilesView",
+					"group": "navigation"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "gpt-context-generator.markFileForInclusion",
+					"when": "resourceScheme == file && !explorerResourceIsFolder",
+					"group": "navigation@1"
+				},
+				{
+					"command": "gpt-context-generator.markFilesFromExplorer",
+					"when": "resourceScheme == file",
+					"group": "navigation@2"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "gpt-context-generator.markFileForInclusion",
+					"group": "navigation@1"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"build": "esbuild src/extension.ts --bundle --outdir=out --platform=node --format=cjs --sourcemap --external:vscode",
+		"watch": "esbuild src/extension.ts --bundle --outdir=out --platform=node --format=cjs --sourcemap --external:vscode --watch",
+		"lint": "eslint src",
+		"pretest": "yarn run build && yarn run lint",
+		"test": "node ./out/test/runTest.js",
+		"vscode:package": "yarn run build && vsce package --out 'builds'",
+		"vscode:publish": "yarn run build && vsce publish"
+	},
+	"dependencies": {
+		"@dqbd/tiktoken": "^1.0.18",
+		"highlight.js": "^11.11.1",
+		"ignore": "^7.0.0"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.13.0",
+		"@stylistic/eslint-plugin": "^2.9.0",
+		"@types/glob": "^8.1.0",
+		"@types/mocha": "^10.0.10",
+		"@types/node": "^22.10.5",
+		"@types/vscode": "^1.96.0",
+		"@typescript-eslint/eslint-plugin": "^5.62.0",
+		"@typescript-eslint/parser": "^5.62.0",
+		"@vscode/test-electron": "^2.4.1",
+		"esbuild": "^0.24.2",
+		"eslint": "^9.13.0",
+		"glob": "^11.0.0",
+		"mocha": "^11.0.1",
+		"prettier": "^3.4.2",
+		"typescript": "^5.7.2",
+		"typescript-eslint": "^8.11.0"
+	},
+	"prettier": {
+		"semi": true,
+		"singleQuote": true,
+		"useTabs": true
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/codybrom/gpt-context-generator.git"
+	},
+	"license": "MIT",
+	"publisher": "codybrom"
 }
