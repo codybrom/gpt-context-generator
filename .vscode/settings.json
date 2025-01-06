@@ -5,7 +5,7 @@
 	"search.exclude": {
 		"out": true
 	},
-	"prettier.configPath": ".prettierrc.json",
+	"prettier.configPath": "",
 	"typescript.tsdk": "node_modules/typescript/lib",
 	"cSpell.words": [
 		"unmark"
