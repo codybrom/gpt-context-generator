@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import {
 	readFileContent,
 	listFiles,
@@ -14,14 +13,22 @@ import { formatFileComment } from '../utils/markdownUtils';
 import { estimateTokenCount } from '../utils/tokenUtils';
 import { extractImports } from '../utils/importParser';
 import { initializeIgnoreFilter, isIgnored } from '../utils/ignoreUtils';
+import { showMessage } from '../utils/vscodeUtils';
+import {
+	env,
+	ViewColumn,
+	window,
+	workspace,
+	WorkspaceConfiguration,
+} from 'vscode';
 
 export class ContextGenerator {
-	private config: vscode.WorkspaceConfiguration;
+	private config: WorkspaceConfiguration;
 	private detectedFileExtensions: string[];
 	private format: string;
 
 	constructor(private workspacePath: string) {
-		this.config = vscode.workspace.getConfiguration('gpt-context-generator');
+		this.config = workspace.getConfiguration('gpt-context-generator');
 		this.detectedFileExtensions = this.config.get(
 			'detectedFileExtensions',
 		) as string[];
@@ -44,29 +51,29 @@ export class ContextGenerator {
 		outputLanguage: string,
 	): Promise<void> {
 		if (outputMethod === 'newWindow') {
-			const document = await vscode.workspace.openTextDocument({
+			const document = await workspace.openTextDocument({
 				content,
 				language: outputLanguage,
 			});
-			await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
+			await window.showTextDocument(document, ViewColumn.One);
 		} else if (outputMethod === 'clipboard') {
-			await vscode.env.clipboard.writeText(content);
-			vscode.window.showInformationMessage(
+			await env.clipboard.writeText(content);
+			window.showInformationMessage(
 				'GPT-friendly context copied to clipboard.',
 			);
 		}
 	}
 
 	private async showTokenCount(content: string): Promise<void> {
-		const tokenCount = estimateTokenCount(content);
+		const tokenCount = await estimateTokenCount(content);
 		const message = `The generated context is approximately ${tokenCount} tokens${
-			(await tokenCount) > 8000 ? ', which is greater than 8000 tokens' : ''
+			tokenCount > 8000 ? ', which is greater than 8000 tokens' : ''
 		}.`;
 
-		if ((await tokenCount) > 8000) {
-			vscode.window.showWarningMessage(message);
+		if (tokenCount > 8000) {
+			showMessage.warning(message);
 		} else {
-			vscode.window.showInformationMessage(message);
+			showMessage.info(message);
 		}
 	}
 
