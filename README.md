@@ -55,22 +55,6 @@ After generating context, you'll see an estimated token count. This helps you st
 
 Configure the extension in VS Code settings:
 
-- **Output Method**
-  - `clipboard`: Copy to clipboard (default)
-  - `newWindow`: Open in new editor
-
-- **Output Language** (for newWindow only)
-  - `plaintext`: Plain text (default)
-  - `markdown`: Markdown formatting
-
-- **Include package.json** (for open file context only)
-  - Include package.json when generating context for open file
-  - Default: `true`
-
-- **Token Warning Threshold**
-  - Token count threshold for showing warnings
-  - Default: `8000`
-
 - **Detected File Extensions**
   - Customize which file types to include
   - Supports many languages and formats:
@@ -84,6 +68,28 @@ Configure the extension in VS Code settings:
     - Mobile (java, kt, dart, etc.)
     - Configuration (json, yaml, toml, etc.)
     - And more...
+
+- **Ignore Files**
+  - Files containing ignore patterns (like .gitignore)
+  - Default: `.gitignore`, `.dockerignore`
+  - Patterns from each file are used to exclude matching files from context
+  - Files are processed in order, and missing files are safely skipped
+
+- **Token Warning Threshold**
+  - Token count threshold for showing warnings
+  - Default: `8000`
+
+- **Output Method**
+  - `clipboard`: Copy to clipboard (default)
+  - `newWindow`: Open in new editor
+
+- **Output Format** (for newWindow only)
+  - `plaintext`: Plain text (default)
+  - `markdown`: Markdown formatting
+
+- **Include package.json** (for open file context only)
+  - Include package.json when generating context for open file
+  - Default: `true`
 
 ## License
 
