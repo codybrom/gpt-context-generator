@@ -4,7 +4,7 @@
 	"description": "Generate GPT-friendly context for files or workspaces",
 	"version": "0.3.0",
 	"engines": {
-		"vscode": "^1.84.0"
+		"vscode": "^1.96.0"
 	},
 	"categories": [
 		"Machine Learning",
