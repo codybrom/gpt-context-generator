@@ -10,7 +10,10 @@ src/**
 .gitignore
 .yarnrc
 **/tsconfig.json
-**/.eslintrc.json
+.eslint*
 
 # Ignore source map files
 **/*.map
+
+# Ignore dependencies
+node_modules/**

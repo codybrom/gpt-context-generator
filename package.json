@@ -157,8 +157,8 @@
 		}
 	},
 	"scripts": {
-		"build": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"build": "esbuild src/extension.ts --bundle --outdir=out --platform=node --format=cjs --sourcemap --external:vscode",
+		"watch": "esbuild src/extension.ts --bundle --outdir=out --platform=node --format=cjs --sourcemap --external:vscode --watch",
 		"lint": "eslint src",
 		"pretest": "yarn run build && yarn run lint",
 		"test": "node ./out/test/runTest.js",
@@ -180,6 +180,7 @@
 		"@typescript-eslint/eslint-plugin": "^5.62.0",
 		"@typescript-eslint/parser": "^5.62.0",
 		"@vscode/test-electron": "^2.4.1",
+		"esbuild": "^0.24.2",
 		"eslint": "^9.13.0",
 		"glob": "^11.0.0",
 		"mocha": "^11.0.1",
