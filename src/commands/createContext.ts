@@ -1,17 +1,12 @@
-import { workspace } from 'vscode';
 import { createContextGenerator } from '../generators/contextGenerator';
 import { markedFiles } from '../providers/markedFilesProvider';
-import { getActiveFilePath, validateWorkspace } from '../utils/vscodeUtils';
+import {
+	getActiveFilePath,
+	getConfig,
+	validateWorkspace,
+} from '../utils/vscodeUtils';
 
 export const createContext = {
-	getConfig() {
-		const config = workspace.getConfiguration('gpt-context-generator');
-		return {
-			includePackageJson:
-				(config.get('includePackageJson') as boolean) ?? false,
-		};
-	},
-
 	async generateContext(
 		workspacePath: string,
 		options: { openFilePath?: string; markedFiles?: string[] },
@@ -19,7 +14,7 @@ export const createContext = {
 		const contextGenerator = createContextGenerator(workspacePath);
 		await contextGenerator.handleContextGeneration({
 			...options,
-			includePackageJson: this.getConfig().includePackageJson,
+			includePackageJson: getConfig().includePackageJson,
 		});
 	},
 

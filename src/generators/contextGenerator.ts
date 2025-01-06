@@ -13,31 +13,19 @@ import { formatFileComment } from '../utils/markdownUtils';
 import { estimateTokenCount } from '../utils/tokenUtils';
 import { extractImports } from '../utils/importParser';
 import { initializeIgnoreFilter, isIgnored } from '../utils/ignoreUtils';
-import { showMessage } from '../utils/vscodeUtils';
-import {
-	env,
-	ViewColumn,
-	window,
-	workspace,
-	WorkspaceConfiguration,
-} from 'vscode';
+import { getConfig, showMessage } from '../utils/vscodeUtils';
+import { env, ViewColumn, window, workspace } from 'vscode';
 
 export class ContextGenerator {
-	private config: WorkspaceConfiguration;
 	private detectedFileExtensions: string[];
 
 	constructor(private workspacePath: string) {
-		this.config = workspace.getConfiguration('gpt-context-generator');
-		this.detectedFileExtensions = this.config.get(
-			'detectedFileExtensions',
-		) as string[];
+		this.detectedFileExtensions = getConfig().detectedFileExtensions;
 		initializeIgnoreFilter(workspacePath);
 	}
 
 	async handleContextGeneration(options: ContextOptions): Promise<void> {
-		const outputMethod = this.config.get('outputMethod') as string;
-		const outputLanguage = this.config.get('outputLanguage') as string;
-
+		const { outputMethod, outputLanguage } = getConfig();
 		const gptContext = await this.generateContext(options);
 		await this.handleOutput(gptContext, outputMethod, outputLanguage);
 		this.showTokenCount(gptContext);

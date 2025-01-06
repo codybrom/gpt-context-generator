@@ -202,6 +202,11 @@
 					"type": "boolean",
 					"default": true,
 					"description": "Include package.json as part of the context (Open File Only)."
+				},
+				"gpt-context-generator.tokenWarningThreshold": {
+					"type": "number",
+					"default": 8000,
+					"description": "Token count threshold for showing warnings. Default is 8000 tokens."
 				}
 			}
 		},

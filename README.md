@@ -63,9 +63,13 @@ Configure the extension in VS Code settings:
   - `plaintext`: Plain text (default)
   - `markdown`: Markdown formatting
 
-- **Include package.json**
+- **Include package.json** (for open file context only)
   - Include package.json when generating context for open file
   - Default: `true`
+
+- **Token Warning Threshold**
+  - Token count threshold for showing warnings
+  - Default: `8000`
 
 - **Detected File Extensions**
   - Customize which file types to include
