@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
+import { getBasename, getDirname } from '../utils/fileUtils';
 
 export const markedFiles = new Set<string>();
 
-export class MarkedFilesProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
+export class MarkedFilesProvider
+	implements vscode.TreeDataProvider<vscode.TreeItem>
+{
 	private _onDidChangeTreeData: vscode.EventEmitter<
 		vscode.TreeItem | undefined | null | void
 	> = new vscode.EventEmitter<vscode.TreeItem | undefined | null | void>();
-	readonly onDidChangeTreeData: vscode.Event<vscode.TreeItem | undefined | null | void> =
-		this._onDidChangeTreeData.event;
+	readonly onDidChangeTreeData: vscode.Event<
+		vscode.TreeItem | undefined | null | void
+	> = this._onDidChangeTreeData.event;
 
 	refresh(): void {
 		this._onDidChangeTreeData.fire();
@@ -24,8 +27,8 @@ export class MarkedFilesProvider implements vscode.TreeDataProvider<vscode.TreeI
 		} else {
 			return Promise.resolve(
 				Array.from(markedFiles).map((filePath) => {
-					const treeItem = new vscode.TreeItem(path.basename(filePath));
-					treeItem.description = path.dirname(filePath);
+					const treeItem = new vscode.TreeItem(getBasename(filePath));
+					treeItem.description = getDirname(filePath);
 					treeItem.command = {
 						command: 'vscode.open',
 						title: 'Open Marked File',
