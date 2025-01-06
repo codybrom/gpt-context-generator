@@ -1,10 +1,14 @@
-import ignore from 'ignore';
+import ignore, { Ignore } from 'ignore';
 import { fileExists, readFileContent, resolvePath } from './fileUtils';
 
 class IgnoreManager {
-	private static filter: ReturnType<typeof ignore> | null = null;
+	private filter: Ignore;
 
-	static initialize(workspacePath: string): void {
+	constructor() {
+		this.filter = ignore();
+	}
+
+	initialize(workspacePath: string): void {
 		const gitIgnorePath = resolvePath(workspacePath, '.gitignore');
 		const gitIgnoreContent = fileExists(gitIgnorePath)
 			? readFileContent(gitIgnorePath)
@@ -17,9 +21,14 @@ class IgnoreManager {
 		}
 	}
 
-	static isIgnored(filePath: string): boolean {
-		return this.filter?.ignores(filePath) ?? false;
+	isIgnored(filePath: string): boolean {
+		return this.filter.ignores(filePath);
 	}
 }
 
-export const { initialize: initializeIgnoreFilter, isIgnored } = IgnoreManager;
+// Create a singleton instance
+const manager = new IgnoreManager();
+
+export const initializeIgnoreFilter = (workspacePath: string) =>
+	manager.initialize(workspacePath);
+export const isIgnored = (filePath: string) => manager.isIgnored(filePath);
