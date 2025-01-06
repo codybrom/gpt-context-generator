@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import ignoreFactory = require('ignore');
+import ignore from 'ignore';
 import { encode } from 'gpt-3-encoder';
 
-const markedFiles: Set<string> = new Set();
+const markedFiles = new Set<string>();
 
 class MarkedFilesProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
 	private _onDidChangeTreeData: vscode.EventEmitter<
@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const markedFilesProvider = new MarkedFilesProvider();
 	vscode.window.registerTreeDataProvider('markedFilesView', markedFilesProvider);
 
-	let disposable = vscode.commands.registerCommand(
+	const disposable = vscode.commands.registerCommand(
 		'gpt-context-generator.createGPTFriendlyContext',
 		async () => {
 			if (!vscode.workspace.workspaceFolders) {
@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	);
 
-	let disposableOpenFile = vscode.commands.registerCommand(
+	const disposableOpenFile = vscode.commands.registerCommand(
 		'gpt-context-generator.createGPTFriendlyContextForOpenFile',
 		async () => {
 			if (!vscode.workspace.workspaceFolders || !vscode.window.activeTextEditor) {
@@ -78,7 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	);
 
-	let disposableMarkFile = vscode.commands.registerCommand(
+	const disposableMarkFile = vscode.commands.registerCommand(
 		'gpt-context-generator.markFileForInclusion',
 		async () => {
 			if (!vscode.window.activeTextEditor) {
@@ -100,7 +100,7 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	);
 
-	let disposableGenerateMarkedFilesContext = vscode.commands.registerCommand(
+	const disposableGenerateMarkedFilesContext = vscode.commands.registerCommand(
 		'gpt-context-generator.createGPTFriendlyContextForMarkedFiles',
 		async () => {
 			if (!vscode.workspace.workspaceFolders) {
@@ -117,7 +117,7 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	);
 
-	let disposableClearMarkedFiles = vscode.commands.registerCommand(
+	const disposableClearMarkedFiles = vscode.commands.registerCommand(
 		'gpt-context-generator.clearMarkedFiles',
 		async () => {
 			markedFiles.clear();
@@ -126,7 +126,7 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 	);
 
-	let disposableUnmarkFileFromTreeView = vscode.commands.registerCommand(
+	const disposableUnmarkFileFromTreeView = vscode.commands.registerCommand(
 		'gpt-context-generator.unmarkFileFromTreeView',
 		async (treeItem: vscode.TreeItem) => {
 			if (treeItem && treeItem.resourceUri) {
@@ -206,7 +206,7 @@ async function createGPTFriendlyContext(
 	markedFiles?: string[],
 ): Promise<string> {
 	const gitIgnorePath = path.join(workspacePath, '.gitignore');
-	const ignoreFilter = ignoreFactory();
+	const ignoreFilter = ignore();
 
 	if (fs.existsSync(gitIgnorePath)) {
 		const gitIgnoreContent = fs.readFileSync(gitIgnorePath).toString();
@@ -305,7 +305,7 @@ async function createGPTFriendlyContextForOpenFile(
 	includePackageJson: boolean,
 ): Promise<string> {
 	const gitIgnorePath = path.join(workspacePath, '.gitignore');
-	const ignoreFilter = ignoreFactory();
+	const ignoreFilter = ignore();
 
 	if (fs.existsSync(gitIgnorePath)) {
 		const gitIgnoreContent = fs.readFileSync(gitIgnorePath).toString();
