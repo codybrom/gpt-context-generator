@@ -136,7 +136,8 @@
 		"vscode:publish": "yarn run build && vsce publish"
 	},
 	"dependencies": {
-		"gpt-3-encoder": "^1.1.4",
+		"@dqbd/tiktoken": "^1.0.18",
+		"highlight.js": "^11.11.1",
 		"ignore": "^7.0.0"
 	},
 	"devDependencies": {

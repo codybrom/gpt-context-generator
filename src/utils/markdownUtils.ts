@@ -1,25 +1,27 @@
-export function getMarkdownLang(fileExtension: string): string {
-	switch (fileExtension) {
-		case 'js':
-			return 'javascript';
-		case 'ts':
-			return 'typescript';
-		case 'md':
-			return 'markdown';
-		default:
-			return fileExtension;
-	}
-}
+import hljs from 'highlight.js';
 
-export function formatFileComment(
-	format: string,
-	filePath: string,
-	fileExtension: string,
-	fileContent: string,
-): string {
+export const getMarkdownLang = (extension: string): string => {
+	// Remove the dot if present
+	const ext = extension.replace(/^\./, '');
+
+	// Try to get the language from highlight.js
+	const language = hljs.getLanguage(ext);
+
+	// If found, return the name, otherwise fallback to the extension
+	return language?.name ?? ext;
+};
+
+export const formatFileComment = (format: string, file: FileData): string => {
+	const replacements = {
+		filePath: file.path,
+		markdownLang: getMarkdownLang(file.extension),
+		fileContent: file.content,
+	};
+
 	return format
 		.replace(/\\n/g, '\n')
-		.replace('{filePath}', filePath)
-		.replace('{markdownLang}', getMarkdownLang(fileExtension))
-		.replace('{fileContent}', fileContent);
-}
+		.replace(
+			/{(\w+)}/g,
+			(_, key) => replacements[key as keyof typeof replacements] ?? '',
+		);
+};

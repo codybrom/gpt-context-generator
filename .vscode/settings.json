@@ -7,7 +7,5 @@
 	},
 	"prettier.configPath": "",
 	"typescript.tsdk": "node_modules/typescript/lib",
-	"cSpell.words": [
-		"unmark"
-	]
+	"cSpell.words": ["codybrom", "dqbd", "tiktoken", "unmark", "yarnrc"]
 }
