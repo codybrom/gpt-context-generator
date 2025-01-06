@@ -11,12 +11,12 @@ export const getActiveFilePath = (): string | null => {
 export const getConfig = () => {
 	const config = workspace.getConfiguration('gpt-context-generator');
 	return {
-		tokenWarningThreshold:
-			(config.get('tokenWarningThreshold') as number) ?? 8000,
+		tokenWarningThreshold: config.get('tokenWarningThreshold') as number,
 		includePackageJson: (config.get('includePackageJson') as boolean) ?? false,
 		outputMethod: config.get('outputMethod') as string,
 		outputLanguage: config.get('outputLanguage') as string,
 		detectedFileExtensions: config.get('detectedFileExtensions') as string[],
+		ignoreFiles: config.get('ignoreFiles') as string[],
 	};
 };
 

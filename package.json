@@ -207,6 +207,19 @@
 					"type": "number",
 					"default": 8000,
 					"description": "Token count threshold for showing warnings. Default is 8000 tokens."
+				},
+				"gpt-context-generator.ignoreFiles": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						".gitignore",
+						".dockerignore"
+					],
+					"description": "Specify files that contain ignore patterns (like .gitignore). Each file's patterns will be used to exclude matching files from the generated context. Files are processed in order, and it's okay if a listed ignore file doesn't exist.",
+					"markdownDescription": "Specify files that contain ignore patterns. Each file's patterns will be used to exclude matching files from the generated context.\n\n**Examples:**\n- `.gitignore`\n- `.dockerignore`\n- `prettier.ignore`\n\nFiles are processed in order, and it's okay if some files don't exist.",
+					"order": 2
 				}
 			}
 		},

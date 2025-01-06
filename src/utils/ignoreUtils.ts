@@ -1,5 +1,6 @@
 import ignore, { Ignore } from 'ignore';
 import { fileExists, readFileContent, resolvePath } from './fileUtils';
+import { getConfig } from './vscodeUtils';
 
 class IgnoreManager {
 	private filter: Ignore;
@@ -9,15 +10,19 @@ class IgnoreManager {
 	}
 
 	initialize(workspacePath: string): void {
-		const gitIgnorePath = resolvePath(workspacePath, '.gitignore');
-		const gitIgnoreContent = fileExists(gitIgnorePath)
-			? readFileContent(gitIgnorePath)
-			: null;
-
+		const ignoreFiles = getConfig().ignoreFiles;
 		this.filter = ignore();
 
-		if (gitIgnoreContent) {
-			this.filter.add(gitIgnoreContent);
+		// Process each ignore file
+		for (const ignoreFile of ignoreFiles) {
+			const ignorePath = resolvePath(workspacePath, ignoreFile);
+			const ignoreContent = fileExists(ignorePath)
+				? readFileContent(ignorePath)
+				: null;
+
+			if (ignoreContent) {
+				this.filter.add(ignoreContent);
+			}
 		}
 	}
 
