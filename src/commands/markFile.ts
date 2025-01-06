@@ -60,13 +60,23 @@ export const markFile = {
 		}
 	},
 
-	async markMultiple(uris: Uri[], markedFilesProvider: MarkedFilesProvider) {
-		const newFiles = uris
-			.map((uri) => uri.fsPath)
-			.filter((fsPath) => !markedFiles.has(fsPath));
+	async markItems(uris: Uri[], markedFilesProvider: MarkedFilesProvider) {
+		const newFiles: string[] = [];
+
+		for (const uri of uris) {
+			if (isDirectory(uri.fsPath)) {
+				// Process directory
+				await this.processDirectory(uri.fsPath, newFiles);
+			} else {
+				// Process single file
+				if (!markedFiles.has(uri.fsPath)) {
+					newFiles.push(uri.fsPath);
+				}
+			}
+		}
 
 		if (newFiles.length === 0) {
-			showMessage.info('Selected files are already marked.');
+			showMessage.info('Selected items are already marked.');
 			return;
 		}
 
@@ -76,43 +86,26 @@ export const markFile = {
 			markedFilesProvider,
 		);
 	},
-	async markFolder(uri: Uri, markedFilesProvider: MarkedFilesProvider) {
-		const folderPath = uri.fsPath;
-		const newFiles: string[] = [];
 
-		const processDirectory = async (dir: string, contextParts: string[]) => {
-			const files = listFiles(dir);
+	async processDirectory(dir: string, newFiles: string[]) {
+		const files = listFiles(dir);
 
-			for (const file of files) {
-				const filePath = resolvePath(dir, file);
-				const relPath = getRelativePath(
-					workspace.workspaceFolders![0].uri.fsPath,
-					filePath,
-				);
+		for (const file of files) {
+			const filePath = resolvePath(dir, file);
+			const relPath = getRelativePath(
+				workspace.workspaceFolders![0].uri.fsPath,
+				filePath,
+			);
 
-				if (isIgnored(relPath)) {
-					continue;
-				}
-
-				if (isDirectory(filePath)) {
-					await processDirectory(filePath, contextParts);
-				} else if (!markedFiles.has(filePath)) {
-					newFiles.push(filePath);
-				}
+			if (isIgnored(relPath)) {
+				continue;
 			}
-		};
 
-		await processDirectory(folderPath, []);
-
-		if (newFiles.length === 0) {
-			showMessage.info('All files in folder are already marked.');
-			return;
+			if (isDirectory(filePath)) {
+				await this.processDirectory(filePath, newFiles);
+			} else if (!markedFiles.has(filePath)) {
+				newFiles.push(filePath);
+			}
 		}
-
-		this.updateMarkedFiles(
-			() => newFiles.forEach((fsPath) => markedFiles.add(fsPath)),
-			`Marked ${newFiles.length} file(s) from folder for inclusion`,
-			markedFilesProvider,
-		);
 	},
 };

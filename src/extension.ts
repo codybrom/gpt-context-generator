@@ -43,15 +43,10 @@ export function activate(context: ExtensionContext) {
 		commands.registerCommand(
 			'gpt-context-generator.markFilesFromExplorer',
 			(uri: Uri, uris: Uri[]) => {
-				// If multiple files are selected, use those
+				// If multiple items are selected, use those
 				const selectedUris = uris?.length ? uris : [uri];
-				markFile.markMultiple(selectedUris, markedFilesProvider);
+				markFile.markItems(selectedUris, markedFilesProvider);
 			},
-		),
-
-		commands.registerCommand(
-			'gpt-context-generator.markFolderFromExplorer',
-			(uri: Uri) => markFile.markFolder(uri, markedFilesProvider),
 		),
 		markedFilesProvider,
 	];

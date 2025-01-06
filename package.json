@@ -60,11 +60,7 @@
 			},
 			{
 				"command": "gpt-context-generator.markFilesFromExplorer",
-				"title": "Mark Files for GPT Context"
-			},
-			{
-				"command": "gpt-context-generator.markFolderFromExplorer",
-				"title": "Mark Folder for GPT Context"
+				"title": "Mark for GPT Context"
 			}
 		],
 		"configuration": {
@@ -148,13 +144,8 @@
 				},
 				{
 					"command": "gpt-context-generator.markFilesFromExplorer",
-					"when": "resourceScheme == file && explorerViewletVisible && !explorerResourceIsFolder",
+					"when": "resourceScheme == file",
 					"group": "navigation@2"
-				},
-				{
-					"command": "gpt-context-generator.markFolderFromExplorer",
-					"when": "explorerResourceIsFolder && resourceScheme == file",
-					"group": "navigation@3"
 				}
 			],
 			"editor/context": [
