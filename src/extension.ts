@@ -1,47 +1,43 @@
-import * as vscode from 'vscode';
 import { MarkedFilesProvider } from './providers/markedFilesProvider';
-import { CommandHandler } from './commands/commandHandler';
+import { createContext } from './commands/createContext';
+import { markFile } from './commands/markFile';
+import { clearMarkedFiles } from './commands/clearMarkedFiles';
+import { commands, ExtensionContext, TreeItem, window } from 'vscode';
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: ExtensionContext) {
 	const markedFilesProvider = new MarkedFilesProvider();
-	const commandHandler = new CommandHandler(markedFilesProvider);
 
-	vscode.window.registerTreeDataProvider(
-		'markedFilesView',
-		markedFilesProvider,
-	);
+	window.registerTreeDataProvider('markedFilesView', markedFilesProvider);
 
 	// Register all commands
 	const disposables = [
-		vscode.commands.registerCommand(
+		commands.registerCommand(
 			'gpt-context-generator.createGPTFriendlyContext',
-			() => commandHandler.createGPTFriendlyContext(),
+			() => createContext.forWorkspace(),
 		),
 
-		vscode.commands.registerCommand(
+		commands.registerCommand(
 			'gpt-context-generator.createGPTFriendlyContextForOpenFile',
-			() => commandHandler.createGPTFriendlyContextForOpenFile(),
+			() => createContext.forOpenFile(),
 		),
 
-		vscode.commands.registerCommand(
-			'gpt-context-generator.markFileForInclusion',
-			() => commandHandler.markFileForInclusion(),
+		commands.registerCommand('gpt-context-generator.markFileForInclusion', () =>
+			markFile.toggleMark(markedFilesProvider),
 		),
 
-		vscode.commands.registerCommand(
+		commands.registerCommand(
 			'gpt-context-generator.createGPTFriendlyContextForMarkedFiles',
-			() => commandHandler.createGPTFriendlyContextForMarkedFiles(),
+			() => createContext.forMarkedFiles(),
 		),
 
-		vscode.commands.registerCommand(
-			'gpt-context-generator.clearMarkedFiles',
-			() => commandHandler.clearMarkedFiles(),
+		commands.registerCommand('gpt-context-generator.clearMarkedFiles', () =>
+			clearMarkedFiles(markedFilesProvider),
 		),
 
-		vscode.commands.registerCommand(
+		commands.registerCommand(
 			'gpt-context-generator.unmarkFileFromTreeView',
-			(treeItem: vscode.TreeItem) =>
-				commandHandler.unmarkFileFromTreeView(treeItem),
+			(treeItem: TreeItem) =>
+				markFile.unmarkFromTreeView(treeItem, markedFilesProvider),
 		),
 	];
 
