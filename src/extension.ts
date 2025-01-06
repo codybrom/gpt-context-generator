@@ -2,7 +2,7 @@ import { MarkedFilesProvider } from './providers/markedFilesProvider';
 import { createContext } from './commands/createContext';
 import { markFile } from './commands/markFile';
 import { clearMarkedFiles } from './commands/clearMarkedFiles';
-import { commands, ExtensionContext, TreeItem, window } from 'vscode';
+import { commands, ExtensionContext, TreeItem, Uri, window } from 'vscode';
 
 export function activate(context: ExtensionContext) {
 	const markedFilesProvider = new MarkedFilesProvider();
@@ -39,6 +39,21 @@ export function activate(context: ExtensionContext) {
 			(treeItem: TreeItem) =>
 				markFile.unmarkFromTreeView(treeItem, markedFilesProvider),
 		),
+
+		commands.registerCommand(
+			'gpt-context-generator.markFilesFromExplorer',
+			(uri: Uri, uris: Uri[]) => {
+				// If multiple files are selected, use those
+				const selectedUris = uris?.length ? uris : [uri];
+				markFile.markMultiple(selectedUris, markedFilesProvider);
+			},
+		),
+
+		commands.registerCommand(
+			'gpt-context-generator.markFolderFromExplorer',
+			(uri: Uri) => markFile.markFolder(uri, markedFilesProvider),
+		),
+		markedFilesProvider,
 	];
 
 	// Add all disposables to subscriptions

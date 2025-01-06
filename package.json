@@ -44,11 +44,27 @@
 			},
 			{
 				"command": "gpt-context-generator.clearMarkedFiles",
-				"title": "Clear Marked Files"
+				"title": "Clear Marked Files",
+				"icon": {
+					"light": "images/clear-light.svg",
+					"dark": "images/clear-dark.svg"
+				}
 			},
 			{
 				"command": "gpt-context-generator.unmarkFileFromTreeView",
-				"title": "Unmark"
+				"title": "Clear Marked File",
+				"icon": {
+					"light": "images/clear-light.svg",
+					"dark": "images/clear-dark.svg"
+				}
+			},
+			{
+				"command": "gpt-context-generator.markFilesFromExplorer",
+				"title": "Mark Files for GPT Context"
+			},
+			{
+				"command": "gpt-context-generator.markFolderFromExplorer",
+				"title": "Mark Folder for GPT Context"
 			}
 		],
 		"configuration": {
@@ -117,11 +133,34 @@
 					"group": "inline"
 				}
 			],
+			"view/title": [
+				{
+					"command": "gpt-context-generator.clearMarkedFiles",
+					"when": "view == markedFilesView",
+					"group": "navigation"
+				}
+			],
 			"explorer/context": [
 				{
 					"command": "gpt-context-generator.markFileForInclusion",
-					"when": "resourceScheme == 'file'",
-					"group": "navigation"
+					"when": "resourceScheme == file && !explorerResourceIsFolder",
+					"group": "navigation@1"
+				},
+				{
+					"command": "gpt-context-generator.markFilesFromExplorer",
+					"when": "resourceScheme == file && explorerViewletVisible && !explorerResourceIsFolder",
+					"group": "navigation@2"
+				},
+				{
+					"command": "gpt-context-generator.markFolderFromExplorer",
+					"when": "explorerResourceIsFolder && resourceScheme == file",
+					"group": "navigation@3"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "gpt-context-generator.markFileForInclusion",
+					"group": "navigation@1"
 				}
 			]
 		}
