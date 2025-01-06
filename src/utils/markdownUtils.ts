@@ -14,14 +14,10 @@ export const getMarkdownLang = (extension: string): string => {
 export const formatFileComment = (format: string, file: FileData): string => {
 	const replacements = {
 		filePath: file.path,
-		markdownLang: getMarkdownLang(file.extension),
+		markdownLang: `${getMarkdownLang(file.extension)} ${file.path}`,
 		fileContent: file.content,
 	};
 
-	return format
-		.replace(/\\n/g, '\n')
-		.replace(
-			/{(\w+)}/g,
-			(_, key) => replacements[key as keyof typeof replacements] ?? '',
-		);
+	// Return just the code block without the filename header
+	return `\`\`\`${replacements.markdownLang}\n${replacements.fileContent}\`\`\``;
 };
