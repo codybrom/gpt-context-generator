@@ -22,18 +22,18 @@ pulling in local dependencies such as API pages that are referenced in your code
 
 ### Generate context for the currently open file and its local imports
 
-1.  Open a file in Visual Studio Code.
-2.  Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
-3.  Type `Generate GPT Context (Current File + Imports)` and select the command from the list.
-4.  The generated context, including dependencies, will be displayed in a new editor tab or copied
+1. Open a file in Visual Studio Code.
+2. Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
+3. Type `Generate GPT Context (Current File + Imports)` and select the command from the list.
+4. The generated context, including dependencies, will be displayed in a new editor tab or copied
     to the clipboard based on your configuration.
 
 ### Generate context for the entire workspace
 
-1.  Open a workspace in Visual Studio Code.
-2.  Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
-3.  Type `Generate GPT Context (Workspace)` and select the command from the list.
-4.  The generated context will be displayed in a new editor tab or copied to the clipboard based on
+1. Open a workspace in Visual Studio Code.
+2. Press `Ctrl+Shift+P` (Windows) or `Cmd+Shift+P` (Mac) to open the Command Palette.
+3. Type `Generate GPT Context (Workspace)` and select the command from the list.
+4. The generated context will be displayed in a new editor tab or copied to the clipboard based on
     your configuration.
 
 ### Generate context for marked files
