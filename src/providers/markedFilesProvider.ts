@@ -5,6 +5,8 @@ import {
 	TreeItem,
 	Uri,
 	workspace,
+	RelativePattern,
+	FileSystemWatcher,
 } from 'vscode';
 import { getBasename, getDirname } from '../utils/fileUtils';
 import { showMessage } from '../utils/vscodeUtils';
@@ -17,62 +19,51 @@ export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
 	> = new EventEmitter<TreeItem | undefined | null | void>();
 	readonly onDidChangeTreeData: Event<TreeItem | undefined | null | void> =
 		this._onDidChangeTreeData.event;
-	private disposables: { dispose(): void }[] = [];
+	private fileWatcher: FileSystemWatcher | undefined;
 
 	constructor() {
-		this.initializeFileWatchers();
+		this.initializeFileWatcher();
 	}
 
-	private initializeFileWatchers(): void {
+	private initializeFileWatcher(): void {
 		if (!workspace.workspaceFolders) {
 			return;
 		}
 
-		// Handle file deletions at workspace level
-		this.disposables.push(
-			workspace.onDidDeleteFiles(({ files }) => {
-				let deletedCount = 0;
-				files.forEach((uri) => {
-					if (markedFiles.has(uri.fsPath)) {
-						markedFiles.delete(uri.fsPath);
-						deletedCount++;
-					}
-				});
+		// Watch all files in the workspace
+		const pattern = new RelativePattern(workspace.workspaceFolders[0], '**/*');
+		this.fileWatcher = workspace.createFileSystemWatcher(pattern);
 
-				if (deletedCount > 0) {
+		// Handle file deletion
+		this.fileWatcher.onDidDelete((uri) => {
+			if (markedFiles.has(uri.fsPath)) {
+				markedFiles.delete(uri.fsPath);
+				this.refresh();
+				showMessage.info(
+					`Removed deleted file from marked files: ${getBasename(uri.fsPath)}`,
+				);
+			}
+		});
+
+		// Handle file renaming/moving using workspace.onDidRenameFiles
+		workspace.onDidRenameFiles(({ files }) => {
+			files.forEach(({ oldUri, newUri }) => {
+				if (markedFiles.has(oldUri.fsPath)) {
+					markedFiles.delete(oldUri.fsPath);
+					markedFiles.add(newUri.fsPath);
 					this.refresh();
 					showMessage.info(
-						`Removed ${deletedCount} deleted file${deletedCount === 1 ? '' : 's'} from marked files`,
+						`Updated marked file path: ${getBasename(oldUri.fsPath)} → ${getBasename(newUri.fsPath)}`,
 					);
 				}
-			}),
-		);
-
-		// Handle file renaming/moving at workspace level
-		this.disposables.push(
-			workspace.onDidRenameFiles(({ files }) => {
-				let renamedCount = 0;
-				files.forEach(({ oldUri, newUri }) => {
-					if (markedFiles.has(oldUri.fsPath)) {
-						markedFiles.delete(oldUri.fsPath);
-						markedFiles.add(newUri.fsPath);
-						renamedCount++;
-					}
-				});
-
-				if (renamedCount > 0) {
-					this.refresh();
-					showMessage.info(
-						`Updated ${renamedCount} marked file path${renamedCount === 1 ? '' : 's'}`,
-					);
-				}
-			}),
-		);
+			});
+		});
 	}
 
 	dispose(): void {
-		this.disposables.forEach((disposable) => disposable.dispose());
-		this.disposables = [];
+		if (this.fileWatcher) {
+			this.fileWatcher.dispose();
+		}
 	}
 
 	refresh(): void {
