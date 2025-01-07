@@ -3,7 +3,7 @@
 	"publisher": "codybrom",
 	"name": "gpt-context-generator",
 	"description": "Generate LLM-ready context for files or workspaces",
-	"version": "1.4.2",
+	"version": "1.4.3",
 	"engines": {
 		"vscode": "^1.96.0"
 	},
@@ -61,10 +61,6 @@
 					"light": "images/clear-light.svg",
 					"dark": "images/clear-dark.svg"
 				}
-			},
-			{
-				"command": "gpt-context-generator.markFilesFromExplorer",
-				"title": "Mark for LLM Context"
 			}
 		],
 		"configuration": {
@@ -217,13 +213,6 @@
 			]
 		},
 		"menus": {
-			"view/item/context": [
-				{
-					"command": "gpt-context-generator.unmarkFileFromTreeView",
-					"when": "view == markedFilesView && viewItem == markedFile",
-					"group": "inline"
-				}
-			],
 			"view/title": [
 				{
 					"command": "gpt-context-generator.createGPTFriendlyContextForMarkedFiles",
