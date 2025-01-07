@@ -9,6 +9,17 @@ export function activate(context: ExtensionContext) {
 	initializeTokenUtils(context);
 
 	const markedFilesProvider = new MarkedFilesProvider();
+	const treeView = window.createTreeView('markedFilesView', {
+		treeDataProvider: markedFilesProvider,
+		showCollapseAll: true,
+	});
+
+	// Update the view title with token count
+	context.subscriptions.push(
+		markedFilesProvider.onDidChangeTreeData(() => {
+			treeView.title = `Marked for LLM Context (${markedFilesProvider.getTokenCountDisplay()})`;
+		}),
+	);
 
 	window.registerTreeDataProvider('markedFilesView', markedFilesProvider);
 

@@ -11,14 +11,14 @@ import {
 import { isIgnored } from '../utils/ignoreUtils';
 
 export const markFile = {
-	updateMarkedFiles(
+	async updateMarkedFiles(
 		action: () => void,
 		message: string,
 		markedFilesProvider: MarkedFilesProvider,
 	) {
 		action();
 		showMessage.info(message);
-		markedFilesProvider.refresh();
+		await markedFilesProvider.refresh();
 	},
 
 	unmarkFile(filePath: string, markedFilesProvider: MarkedFilesProvider) {

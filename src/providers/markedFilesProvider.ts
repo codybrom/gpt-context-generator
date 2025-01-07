@@ -8,12 +8,15 @@ import {
 	RelativePattern,
 	FileSystemWatcher,
 } from 'vscode';
-import { getBasename, getDirname } from '../utils/fileUtils';
-import { showMessage } from '../utils/vscodeUtils';
+import { getBasename, getDirname, readFileContent } from '../utils/fileUtils';
+import { getConfig, showMessage } from '../utils/vscodeUtils';
+import { estimateTokenCount } from '../utils/tokenUtils';
 
 export const markedFiles = new Set<string>();
 
 export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
+	private _tokenCount = 0;
+
 	private _onDidChangeTreeData: EventEmitter<
 		TreeItem | undefined | null | void
 	> = new EventEmitter<TreeItem | undefined | null | void>();
@@ -45,6 +48,13 @@ export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
 			}
 		});
 
+		// Handle file content changes
+		this.fileWatcher.onDidChange((uri) => {
+			if (markedFiles.has(uri.fsPath)) {
+				this.handleFileChange();
+			}
+		});
+
 		// Handle file renaming/moving using workspace.onDidRenameFiles
 		workspace.onDidRenameFiles(({ files }) => {
 			files.forEach(({ oldUri, newUri }) => {
@@ -66,7 +76,8 @@ export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
 		}
 	}
 
-	refresh(): void {
+	async refresh(): Promise<void> {
+		await this.updateTokenCount();
 		this._onDidChangeTreeData.fire();
 	}
 
@@ -77,21 +88,40 @@ export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
 	getChildren(element?: TreeItem): Thenable<TreeItem[]> {
 		if (element) {
 			return Promise.resolve([]);
-		} else {
-			return Promise.resolve(
-				Array.from(markedFiles).map((filePath) => {
-					const treeItem = new TreeItem(getBasename(filePath));
-					treeItem.description = getDirname(filePath);
-					treeItem.command = {
-						command: 'vscode.open',
-						title: 'Open Marked File',
-						arguments: [Uri.file(filePath)],
-					};
-					treeItem.contextValue = 'markedFile';
-					treeItem.resourceUri = Uri.file(filePath);
-					return treeItem;
-				}),
-			);
 		}
+
+		// Only show file items
+		const fileItems = Array.from(markedFiles).map((filePath) => {
+			const treeItem = new TreeItem(getBasename(filePath));
+			treeItem.description = getDirname(filePath);
+			treeItem.command = {
+				command: 'vscode.open',
+				title: 'Open Marked File',
+				arguments: [Uri.file(filePath)],
+			};
+			treeItem.contextValue = 'markedFile';
+			treeItem.resourceUri = Uri.file(filePath);
+			return treeItem;
+		});
+
+		return Promise.resolve(fileItems);
+	}
+
+	getTokenCountDisplay(): string {
+		return `${this._tokenCount} tokens${
+			this._tokenCount > getConfig().tokenWarningThreshold ? ' ⚠️' : ''
+		}`;
+	}
+
+	private async updateTokenCount(): Promise<void> {
+		const allContent = Array.from(markedFiles)
+			.map((filePath) => readFileContent(filePath))
+			.join('\n');
+		this._tokenCount = await estimateTokenCount(allContent);
+	}
+
+	private async handleFileChange(): Promise<void> {
+		await this.updateTokenCount();
+		this.refresh();
 	}
 }

@@ -91,6 +91,12 @@ Configure the extension in VS Code settings:
   - Include package.json when generating context for open file
   - Default: `true`
 
+## Credits
+
+- Primary development: [@codybrom](https://github.com/codybrom)
+- Marked Files feature: [@Aventuum](https://github.com/Aventuum)
+- Magic Wand icon: [@boxicons](https://github.com/atisawd/boxicons)
+
 ## License
 
 Released under the MIT License.
