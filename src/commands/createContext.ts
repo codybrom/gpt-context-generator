@@ -3,6 +3,7 @@ import { markedFiles } from '../providers/markedFilesProvider';
 import {
 	getActiveFilePath,
 	getConfig,
+	showMessage,
 	validateWorkspace,
 } from '../utils/vscodeUtils';
 
@@ -15,17 +16,42 @@ export const createContext = {
 			bypassFileTypeEnforcement?: boolean;
 		},
 	) {
-		const contextGenerator = createContextGenerator(workspacePath);
-		await contextGenerator.handleContextGeneration({
-			...options,
-			includePackageJson: getConfig().includePackageJson,
-		});
+		try {
+			const contextGenerator = createContextGenerator(workspacePath);
+
+			const config = getConfig();
+			await contextGenerator.handleContextGeneration({
+				...options,
+				includePackageJson: config.includePackageJson,
+				outputMethod: config.outputMethod,
+				outputLanguage: config.outputLanguage,
+			});
+		} catch (error) {
+			console.error('Error in generateContext:', error);
+			throw error;
+		}
 	},
 
 	async forWorkspace() {
 		const workspacePath = validateWorkspace();
-		if (workspacePath) {
-			await this.generateContext(workspacePath, {});
+		if (!workspacePath) {
+			console.log('No workspace path found');
+			showMessage.error('Please open a workspace before generating context.');
+			return;
+		}
+
+		try {
+			await this.generateContext(workspacePath, {
+				bypassFileTypeEnforcement: false,
+			});
+			showMessage.info('Context generation completed successfully');
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : 'An unknown error occurred';
+			console.error('Workspace context generation failed:', errorMessage);
+			showMessage.error(
+				`Failed to generate workspace context: ${errorMessage}`,
+			);
 		}
 	},
 

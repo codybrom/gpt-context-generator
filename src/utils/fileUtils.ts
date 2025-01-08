@@ -18,6 +18,9 @@ export function getExtension(filepath: string): string {
 }
 
 export function getRelativePath(from: string, to: string): string {
+	if (!from || !to) {
+		throw new Error('Invalid path: both from and to paths must be provided');
+	}
 	return path.relative(from, to);
 }
 
@@ -42,5 +45,8 @@ export function readPackageJson(workspacePath: string): string | null {
 }
 
 export function resolvePath(...paths: string[]): string {
+	if (!paths.length || paths.some((p) => !p)) {
+		throw new Error('Invalid path: path segments must not be empty');
+	}
 	return path.join(...paths);
 }

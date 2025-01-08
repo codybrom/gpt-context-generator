@@ -22,17 +22,38 @@ export class ContextGenerator {
 	private enforceFileTypes: boolean;
 
 	constructor(private workspacePath: string) {
+		if (!workspacePath) {
+			throw new Error('Workspace path must be provided');
+		}
 		const config = getConfig();
 		this.detectedFileExtensions = config.detectedFileExtensions;
 		this.enforceFileTypes = config.enforceFileTypes;
 		initializeIgnoreFilter(workspacePath);
 	}
 
-	async handleContextGeneration(options: ContextOptions): Promise<void> {
-		const { outputMethod, outputLanguage } = getConfig();
-		const gptContext = await this.generateContext(options);
-		await this.handleOutput(gptContext, outputMethod, outputLanguage);
-		this.showTokenCount(gptContext);
+	async handleContextGeneration(
+		options: ContextOptions & {
+			outputMethod?: string;
+			outputLanguage?: string;
+		},
+	): Promise<void> {
+		try {
+			const outputMethod = options.outputMethod || 'clipboard';
+			const outputLanguage = options.outputLanguage || 'plaintext';
+
+			const gptContext = await this.generateContext(options);
+
+			if (gptContext.length === 0) {
+				showMessage.warning('No files were found to include in the context.');
+				return;
+			}
+
+			await this.handleOutput(gptContext, outputMethod, outputLanguage);
+			await this.showTokenCount(gptContext);
+		} catch (error) {
+			console.error('Error in handleContextGeneration:', error);
+			throw error;
+		}
 	}
 
 	private async handleOutput(
@@ -40,15 +61,26 @@ export class ContextGenerator {
 		outputMethod: string,
 		outputLanguage: string,
 	): Promise<void> {
-		if (outputMethod === 'newWindow') {
-			const document = await workspace.openTextDocument({
-				content,
-				language: outputLanguage,
-			});
-			await window.showTextDocument(document, ViewColumn.One);
-		} else if (outputMethod === 'clipboard') {
-			await env.clipboard.writeText(content);
-			window.showInformationMessage('LLM-ready context copied to clipboard.');
+		console.log('handleOutput called:', {
+			contentLength: content.length,
+			outputMethod,
+			outputLanguage,
+		});
+
+		try {
+			if (outputMethod === 'newWindow') {
+				const document = await workspace.openTextDocument({
+					content,
+					language: outputLanguage,
+				});
+				await window.showTextDocument(document, ViewColumn.One);
+			} else if (outputMethod === 'clipboard') {
+				await env.clipboard.writeText(content);
+				window.showInformationMessage('LLM-ready context copied to clipboard.');
+			}
+		} catch (error) {
+			console.error('Error in handleOutput:', error);
+			throw error;
 		}
 	}
 
@@ -74,21 +106,34 @@ export class ContextGenerator {
 		markedFiles,
 		includePackageJson = false,
 	}: ContextOptions): Promise<string> {
+		console.log('\n=== Starting context generation ===');
 		const contextParts: string[] = [];
 
-		if (markedFiles?.length) {
-			await this.processMarkedFiles(markedFiles, contextParts);
-		} else if (openFilePath) {
-			await this.processOpenFile(openFilePath, contextParts);
-		} else {
-			await this.processDirectory(this.workspacePath, contextParts);
-		}
+		try {
+			if (markedFiles?.length) {
+				console.log('Processing marked files');
+				await this.processMarkedFiles(markedFiles, contextParts);
+			} else if (openFilePath) {
+				console.log('Processing open file');
+				await this.processOpenFile(openFilePath, contextParts);
+			} else {
+				console.log('Processing entire workspace');
+				await this.processDirectory(this.workspacePath, contextParts);
+			}
 
-		if (includePackageJson) {
-			await this.addPackageJson(contextParts);
-		}
+			if (includePackageJson) {
+				console.log('Adding package.json');
+				await this.addPackageJson(contextParts);
+			}
 
-		return contextParts.join('\n');
+			console.log(
+				`\nContext generation complete. Files processed: ${contextParts.length}`,
+			);
+			return contextParts.join('\n');
+		} catch (error) {
+			console.error('Error during context generation:', error);
+			throw error;
+		}
 	}
 
 	private createFileData(filePath: string, relPath: string): FileData {
@@ -172,22 +217,74 @@ export class ContextGenerator {
 		dir: string,
 		contextParts: string[],
 	): Promise<void> {
-		const files = listFiles(dir);
+		if (!dir) {
+			console.log('Empty directory path provided');
+			return;
+		}
 
-		for (const file of files) {
-			const filePath = resolvePath(dir, file);
-			const relPath = getRelativePath(this.workspacePath, filePath);
+		// Get relative path for ignore checking
+		const relPath = getRelativePath(this.workspacePath, dir);
 
-			// For workspace-wide scanning, respect ignore patterns
-			if (isIgnored(relPath)) {
-				continue;
+		// Check if the directory itself should be ignored before processing
+		if (isIgnored(relPath)) {
+			console.log('Skipping ignored directory:', relPath);
+			return;
+		}
+
+		console.log('\n--- Processing directory:', dir);
+
+		try {
+			const files = listFiles(dir);
+			console.log(`Found ${files.length} files in directory`);
+
+			for (const file of files) {
+				if (!file) {
+					continue; // Skip empty file names
+				}
+
+				try {
+					const filePath = resolvePath(dir, file);
+					const fileRelPath = getRelativePath(this.workspacePath, filePath);
+					console.log('\nExamining:', fileRelPath);
+
+					// Skip .git directory entirely
+					if (file === '.git' || fileRelPath.startsWith('.git/')) {
+						console.log('Skipping .git directory/file');
+						continue;
+					}
+
+					// Check if file should be ignored
+					if (isIgnored(fileRelPath)) {
+						console.log('File is ignored by patterns:', fileRelPath);
+						continue;
+					}
+
+					if (isDirectory(filePath)) {
+						console.log('Processing subdirectory:', fileRelPath);
+						await this.processDirectory(filePath, contextParts);
+						continue;
+					}
+
+					// Check file extension
+					const extension = getExtension(filePath);
+					if (
+						this.enforceFileTypes &&
+						!this.detectedFileExtensions.includes(extension)
+					) {
+						console.log(`Skipping unsupported file type: ${extension}`);
+						continue;
+					}
+
+					// Process the file
+					console.log('Processing file:', fileRelPath);
+					await this.processFile(filePath, fileRelPath, contextParts);
+					console.log('Added to context:', fileRelPath);
+				} catch (error) {
+					console.error(`Error processing ${file}:`, error);
+				}
 			}
-
-			if (isDirectory(filePath)) {
-				await this.processDirectory(filePath, contextParts);
-			} else {
-				await this.processFile(filePath, relPath, contextParts);
-			}
+		} catch (error) {
+			console.error(`Error processing directory ${dir}:`, error);
 		}
 	}
 
@@ -218,12 +315,19 @@ export class ContextGenerator {
 		contextParts: string[],
 	): Promise<void> {
 		const fileExtension = getExtension(filePath);
-		if (
-			!this.enforceFileTypes ||
-			this.detectedFileExtensions.includes(fileExtension)
-		) {
-			const fileData = this.createFileData(filePath, relPath);
-			contextParts.push(`${formatFileComment(fileData)}\n\n`);
+		try {
+			if (
+				!this.enforceFileTypes ||
+				this.detectedFileExtensions.includes(fileExtension)
+			) {
+				const fileData = this.createFileData(filePath, relPath);
+				contextParts.push(`${formatFileComment(fileData)}\n\n`);
+				console.log('Successfully added to context:', relPath);
+			} else {
+				console.log('Skipping file due to extension:', relPath);
+			}
+		} catch (error) {
+			console.error(`Error processing file ${relPath}:`, error);
 		}
 	}
 

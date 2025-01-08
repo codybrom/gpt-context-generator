@@ -8,4 +8,11 @@ interface ContextOptions {
 	openFilePath?: string;
 	markedFiles?: string[];
 	includePackageJson?: boolean;
+	outputMethod?: string;
+	outputLanguage?: string;
+}
+
+interface IgnoreConfig {
+	ignoreFiles: string[];
+	ignorePatternsFromFile?: boolean;
 }

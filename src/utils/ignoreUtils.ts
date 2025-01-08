@@ -1,121 +1,273 @@
 import ignore, { Ignore } from 'ignore';
-import { fileExists, readFileContent, resolvePath } from './fileUtils';
+import {
+	fileExists,
+	readFileContent,
+	getDirname,
+	getRelativePath,
+	resolvePath,
+} from './fileUtils';
 import { getConfig } from './vscodeUtils';
-import { workspace, FileSystemWatcher, RelativePattern } from 'vscode';
+import {
+	workspace,
+	FileSystemWatcher,
+	RelativePattern,
+	Disposable,
+} from 'vscode';
 
 class IgnoreManager {
-	private filter: Ignore;
-	private loadedPatterns: string[] = [];
+	private filters = new Map<string, Ignore>();
+	private loadedPatterns = new Map<string, string[]>();
 	private initializedWorkspace: string | null = null;
 	private fileWatchers: FileSystemWatcher[] = [];
+	private configWatcher: Disposable;
 
 	constructor() {
-		this.filter = ignore();
-		this.setupConfigWatcher();
+		this.setupFileWatchers = this.setupFileWatchers.bind(this);
+		this.configWatcher = this.setupConfigWatcher();
 	}
 
-	private setupConfigWatcher() {
+	isInitialized(workspacePath: string): boolean {
+		return this.initializedWorkspace === workspacePath;
+	}
+
+	private setupConfigWatcher(): Disposable {
 		// Watch for changes to our extension's configuration
-		workspace.onDidChangeConfiguration((e) => {
+		return workspace.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration('gpt-context-generator.ignoreFiles')) {
 				console.log('Ignore files configuration changed, reinitializing...');
-				this.reinitialize();
+				if (this.initializedWorkspace) {
+					this.initialize(this.initializedWorkspace);
+				}
 			}
 		});
 	}
 
-	private setupFileWatchers(workspacePath: string) {
+	private async setupRootIgnorePatterns(): Promise<void> {
+		const ignoreFiles = getConfig().ignoreFiles;
+
+		// Create a root filter with the configured ignore patterns
+		const rootFilter = ignore();
+
+		// Add patterns for the ignore files themselves - these are from the extension's config
+		// [".gitignore", ".dockerignore", ".llmcontextignore", ".ignore", "*.ignore"]
+		ignoreFiles.forEach((pattern) => {
+			rootFilter.add(`**/${pattern}`);
+		});
+
+		// Store the root patterns
+		this.filters.set('', rootFilter);
+		this.loadedPatterns.set('', ignoreFiles);
+
+		console.log('Set up root ignore patterns:', ignoreFiles);
+	}
+
+	private async setupFileWatchers(workspacePath: string): Promise<void> {
 		// Dispose any existing watchers
 		this.fileWatchers.forEach((watcher) => watcher.dispose());
 		this.fileWatchers = [];
 
 		// Create new watchers for each ignore file
 		const ignoreFiles = getConfig().ignoreFiles;
-		ignoreFiles.forEach((ignoreFile) => {
+
+		// Watch for any configured ignore files in the workspace
+		for (const ignorePattern of ignoreFiles) {
 			const watcher = workspace.createFileSystemWatcher(
-				new RelativePattern(workspacePath, ignoreFile),
+				new RelativePattern(workspacePath, `**/${ignorePattern}`),
 			);
 
-			watcher.onDidChange(() => {
-				console.log(`Ignore file changed: ${ignoreFile}, reinitializing...`);
-				this.reinitialize();
+			watcher.onDidChange((uri) => {
+				console.log(`Ignore file changed: ${uri.fsPath}, reinitializing...`);
+				this.initialize(this.initializedWorkspace!);
 			});
-			watcher.onDidCreate(() => {
-				console.log(`Ignore file created: ${ignoreFile}, reinitializing...`);
-				this.reinitialize();
+			watcher.onDidCreate((uri) => {
+				console.log(`Ignore file created: ${uri.fsPath}, reinitializing...`);
+				this.initialize(this.initializedWorkspace!);
 			});
-			watcher.onDidDelete(() => {
-				console.log(`Ignore file deleted: ${ignoreFile}, reinitializing...`);
-				this.reinitialize();
+			watcher.onDidDelete((uri) => {
+				console.log(`Ignore file deleted: ${uri.fsPath}, reinitializing...`);
+				this.initialize(this.initializedWorkspace!);
 			});
 
 			this.fileWatchers.push(watcher);
-		});
-	}
-
-	private reinitialize() {
-		if (this.initializedWorkspace) {
-			this.initialize(this.initializedWorkspace);
 		}
 	}
 
-	initialize(workspacePath: string): void {
-		console.log('Initializing ignore filter for workspace:', workspacePath);
-		console.log('Looking for ignore files:', getConfig().ignoreFiles);
+	private async findIgnoreFiles(): Promise<string[]> {
+		if (!this.initializedWorkspace) {
+			console.error('Workspace path not initialized');
+			return [];
+		}
 
-		this.filter = ignore();
-		this.loadedPatterns = [];
+		const workspacePath = this.initializedWorkspace; // capture for use in closure
+		const results: string[] = [];
+		const ignorePatterns = getConfig().ignoreFiles;
 
-		// Setup watchers for the ignore files
-		this.setupFileWatchers(workspacePath);
+		// Get the root filter that we've already set up
+		const rootFilter = this.filters.get('');
+		if (!rootFilter) {
+			console.error('Root ignore patterns not initialized');
+			return results;
+		}
 
-		// Process each ignore file
-		const ignoreFiles = getConfig().ignoreFiles;
-		for (const ignoreFile of ignoreFiles) {
-			const ignorePath = resolvePath(workspacePath, ignoreFile);
-			console.log('Checking for ignore file at:', ignorePath);
+		// Use VSCode workspace file search API for better performance
+		for (const pattern of ignorePatterns) {
+			try {
+				const files = await workspace.findFiles(
+					`**/${pattern}`,
+					'{.git/**}',
+					1000,
+				);
 
-			const ignoreContent = fileExists(ignorePath)
-				? readFileContent(ignorePath)
-				: null;
+				// Filter the results using our root patterns
+				for (const file of files) {
+					const relativePath = getRelativePath(workspacePath, file.fsPath);
+					const shouldInclude = !rootFilter.ignores(relativePath);
 
-			if (ignoreContent) {
-				console.log('Found ignore file:', ignoreFile);
-				const patterns = ignoreContent
-					.split('\n')
-					.map((line) => line.trim())
-					.filter((line) => line && !line.startsWith('#'));
-
-				console.log('Loaded patterns from', ignoreFile + ':', patterns);
-
-				for (const pattern of patterns) {
-					this.filter.add(pattern);
-					this.loadedPatterns.push(pattern);
+					if (shouldInclude) {
+						results.push(file.fsPath);
+					} else {
+						console.log(`Skipping ignored ignore file: ${relativePath}`);
+					}
 				}
-			} else {
-				console.log('Ignore file not found:', ignoreFile);
+
+				console.log(`Found ${pattern} files:`, results.length);
+			} catch (error) {
+				console.error(`Error finding ${pattern} files:`, error);
 			}
 		}
 
+		// Sort by path length to ensure parent ignores are processed first
+		return results.sort((a, b) => a.length - b.length);
+	}
+
+	async initialize(workspacePath: string): Promise<void> {
+		console.log('Initializing ignore filters for workspace:', workspacePath);
+		const ignoreFiles = getConfig().ignoreFiles;
+		console.log('Looking for ignore files:', ignoreFiles);
+
+		// Set the workspace path first
 		this.initializedWorkspace = workspacePath;
+
+		this.filters.clear();
+		this.loadedPatterns.clear();
+
+		// First set up root-level ignore patterns from config
+		await this.setupRootIgnorePatterns();
+
+		// Then process root-level ignore files before looking for others
+		for (const pattern of ignoreFiles) {
+			const rootIgnorePath = resolvePath(workspacePath, pattern);
+			if (fileExists(rootIgnorePath)) {
+				console.log(`Processing root ignore file: ${pattern}`);
+				await this.processIgnoreFile(rootIgnorePath, '');
+			}
+		}
+
+		// Setup watchers for the ignore files
+		await this.setupFileWatchers(workspacePath);
+
+		// Now find and process all other ignore files
+		const foundIgnoreFiles = await this.findIgnoreFiles();
+		console.log('Found additional ignore files:', foundIgnoreFiles);
+
+		// Process each non-root ignore file
+		for (const ignorePath of foundIgnoreFiles) {
+			// Skip root ignore files as we've already processed them
+			if (getDirname(getRelativePath(workspacePath, ignorePath)) !== '') {
+				const relativeDir = getDirname(
+					getRelativePath(workspacePath, ignorePath),
+				);
+				await this.processIgnoreFile(ignorePath, relativeDir);
+			}
+		}
+	}
+
+	private async processIgnoreFile(
+		ignorePath: string,
+		relativeDir: string,
+	): Promise<void> {
+		const filename = ignorePath.split(/[\\/]/).pop()!;
+		console.log(`Processing ${filename} for directory: ${relativeDir}`);
+
+		if (fileExists(ignorePath)) {
+			const ignoreContent = readFileContent(ignorePath);
+			const patterns = ignoreContent
+				.split('\n')
+				.map((line) => line.trim())
+				.filter((line) => line && !line.startsWith('#'))
+				.map((pattern) => {
+					// Remove leading slash if present
+					if (pattern.startsWith('/')) {
+						pattern = pattern.slice(1);
+					}
+					return pattern;
+				});
+
+			const filter = ignore();
+			patterns.forEach((pattern) => filter.add(pattern));
+
+			// Store patterns with their directory context
+			this.filters.set(relativeDir, filter);
+			this.loadedPatterns.set(relativeDir, patterns);
+
+			console.log(
+				`Loaded ${patterns.length} patterns from ${filename} for ${relativeDir || 'root'}:`,
+				patterns,
+			);
+		} else {
+			console.log(`Ignore file not found: ${filename}`);
+		}
 	}
 
 	isIgnored(filePath: string): boolean {
+		if (!filePath || filePath === '.') {
+			return false;
+		}
+
+		// Normalize path
 		const normalizedPath = filePath.split(/[\\/]/).filter(Boolean).join('/');
+		const pathParts = normalizedPath.split('/');
 
-		console.log('Original path:', filePath);
-		console.log('Normalized path:', normalizedPath);
-		console.log('Loaded patterns:', this.loadedPatterns);
+		// Check root patterns first
+		const rootFilter = this.filters.get('');
+		if (rootFilter && rootFilter.ignores(normalizedPath)) {
+			console.log(
+				`File "${normalizedPath}" ignored by root patterns`,
+				`(path: ${normalizedPath})`,
+			);
+			return true;
+		}
 
-		const result = this.filter.ignores(normalizedPath);
-		console.log('Ignore result:', result);
+		// Then check each directory level's patterns
+		let currentPath = '';
+		for (let i = 0; i < pathParts.length; i++) {
+			currentPath = i === 0 ? pathParts[0] : `${currentPath}/${pathParts[i]}`;
 
-		return result;
+			const filter = this.filters.get(currentPath);
+			if (filter) {
+				// Get the remaining path relative to this ignore file's location
+				const remainingParts = pathParts.slice(i + 1);
+				const relativeToFilter = remainingParts.join('/');
+
+				if (filter.ignores(relativeToFilter)) {
+					console.log(
+						`File "${normalizedPath}" ignored by patterns in "${currentPath}"`,
+						`(relative path: ${relativeToFilter})`,
+					);
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
-	dispose() {
+	dispose(): void {
 		this.fileWatchers.forEach((watcher) => watcher.dispose());
 		this.fileWatchers = [];
+		if (this.configWatcher) {
+			this.configWatcher.dispose();
+		}
 	}
 }
 
@@ -125,4 +277,6 @@ const manager = new IgnoreManager();
 export const initializeIgnoreFilter = (workspacePath: string) =>
 	manager.initialize(workspacePath);
 export const isIgnored = (filePath: string) => manager.isIgnored(filePath);
+export const isInitialized = (workspacePath: string) =>
+	manager.isInitialized(workspacePath);
 export const dispose = () => manager.dispose();
