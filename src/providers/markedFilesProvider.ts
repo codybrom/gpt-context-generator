@@ -9,7 +9,6 @@ import {
 	FileSystemWatcher,
 	FileDecorationProvider,
 	FileDecoration,
-	ThemeColor,
 	window,
 } from 'vscode';
 import { getBasename, getDirname, readFileContent } from '../utils/fileUtils';
@@ -100,7 +99,6 @@ export class MarkedFilesProvider
 			return {
 				badge: '📎',
 				tooltip: 'Marked for LLM Context',
-				color: new ThemeColor('gitDecoration.addedResourceForeground'),
 			};
 		}
 		return undefined;
