@@ -3,7 +3,7 @@
 	"publisher": "codybrom",
 	"name": "gpt-context-generator",
 	"description": "Generate LLM-ready context for files or workspaces",
-	"version": "1.4.3",
+	"version": "1.5.0",
 	"engines": {
 		"vscode": "^1.96.0"
 	},
