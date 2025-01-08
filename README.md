@@ -49,7 +49,7 @@ The generated context will be copied to your clipboard or opened in a new window
 
 ## Token Count Estimation
 
-After generating context, you'll see an estimated token count. This helps you stay within AI model token limits. A warning appears if the context exceeds 8,000 tokens.
+After generating context, you'll see an estimated token count. This helps you stay within AI model token limits. A warning appears if the context exceeds a configurable token limit (default: 32,000).
 
 ## Configuration
 
