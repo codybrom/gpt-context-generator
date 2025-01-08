@@ -7,6 +7,10 @@ import {
 	workspace,
 	RelativePattern,
 	FileSystemWatcher,
+	FileDecorationProvider,
+	FileDecoration,
+	ThemeColor,
+	window,
 } from 'vscode';
 import { getBasename, getDirname, readFileContent } from '../utils/fileUtils';
 import { getConfig, showMessage } from '../utils/vscodeUtils';
@@ -14,7 +18,9 @@ import { estimateTokenCount } from '../utils/tokenUtils';
 
 export const markedFiles = new Set<string>();
 
-export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
+export class MarkedFilesProvider
+	implements TreeDataProvider<TreeItem>, FileDecorationProvider
+{
 	private _tokenCount = 0;
 
 	private _onDidChangeTreeData: EventEmitter<
@@ -23,9 +29,14 @@ export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
 	readonly onDidChangeTreeData: Event<TreeItem | undefined | null | void> =
 		this._onDidChangeTreeData.event;
 	private fileWatcher: FileSystemWatcher | undefined;
+	private _onDidChangeFileDecorations: EventEmitter<Uri | Uri[] | undefined> =
+		new EventEmitter<Uri | Uri[] | undefined>();
+	readonly onDidChangeFileDecorations: Event<Uri | Uri[] | undefined> =
+		this._onDidChangeFileDecorations.event;
 
 	constructor() {
 		this.initializeFileWatcher();
+		window.registerFileDecorationProvider(this);
 	}
 
 	private initializeFileWatcher(): void {
@@ -70,15 +81,35 @@ export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
 		});
 	}
 
-	dispose(): void {
-		if (this.fileWatcher) {
-			this.fileWatcher.dispose();
-		}
+	private notifyDecorationChange() {
+		this._onDidChangeFileDecorations.fire(undefined);
 	}
 
 	async refresh(): Promise<void> {
 		await this.updateTokenCount();
 		this._onDidChangeTreeData.fire();
+		this.notifyDecorationChange();
+	}
+
+	provideFileDecoration(uri: Uri): FileDecoration | undefined {
+		if (uri.scheme === 'marked-view') {
+			return undefined;
+		}
+
+		if (markedFiles.has(uri.fsPath)) {
+			return {
+				badge: '📎',
+				tooltip: 'Marked for LLM Context',
+				color: new ThemeColor('gitDecoration.addedResourceForeground'),
+			};
+		}
+		return undefined;
+	}
+
+	dispose(): void {
+		if (this.fileWatcher) {
+			this.fileWatcher.dispose();
+		}
 	}
 
 	getTreeItem(element: TreeItem): TreeItem {
@@ -100,7 +131,8 @@ export class MarkedFilesProvider implements TreeDataProvider<TreeItem> {
 				arguments: [Uri.file(filePath)],
 			};
 			treeItem.contextValue = 'markedFile';
-			treeItem.resourceUri = Uri.file(filePath);
+			// Create a URI with a different scheme to avoid decorations
+			treeItem.resourceUri = Uri.parse(`marked-view://${filePath}`);
 			return treeItem;
 		});
 
