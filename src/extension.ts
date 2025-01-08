@@ -4,8 +4,15 @@ import { createContext } from './commands/createContext';
 import { markFile } from './commands/markFile';
 import { clearMarkedFiles } from './commands/clearMarkedFiles';
 import { commands, ExtensionContext, TreeItem, Uri, window } from 'vscode';
+import { initializeIgnoreFilter } from './utils/ignoreUtils';
+import { validateWorkspace } from './utils/vscodeUtils';
 
 export function activate(context: ExtensionContext) {
+	const workspacePath = validateWorkspace();
+	if (workspacePath) {
+		initializeIgnoreFilter(workspacePath);
+	}
+
 	initializeTokenUtils(context);
 
 	const markedFilesProvider = new MarkedFilesProvider();
