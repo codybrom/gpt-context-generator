@@ -12,6 +12,7 @@ This Visual Studio Code extension helps you generate LLM-ready context from your
 - Mark or unmark open files via Command Palette, or individual files and folders via the Explorer context menu
 - Automatic file tracking updates marked files when they're moved or deleted
 - Token count estimation for generated context
+- Optional file type detection to include or exclude common programming file extensions
 - Automatic support for multiple programming languages and file types
 
 ## Usage
@@ -55,8 +56,13 @@ After generating context, you'll see an estimated token count. This helps you st
 
 Configure the extension in VS Code settings:
 
+- **Enable File Type Detection**
+  - `enforceFileTypes`: Enable/disable file type detection (default: `true`)
+  - When enabled, only files with extensions in `detectedFileExtensions` are processed
+  - When disabled, all file types are included regardless of extension
+
 - **Detected File Extensions**
-  - Customize which file types to include
+  - Customize which file types to include (only when `enforceFileTypes` is enabled)
   - Supports many languages and formats:
     - JavaScript/TypeScript (js, jsx, ts, tsx, etc.)
     - Python (py, pyi, pyw, ipynb)
@@ -73,7 +79,7 @@ Configure the extension in VS Code settings:
   - Files containing ignore patterns (like .gitignore)
   - Default: `.gitignore`, `.dockerignore`
   - Patterns from each file are used to exclude matching files from context
-  - Files are processed in order, and missing files are safely skipped
+  - Files are processed in order, and missing ignore files are safely skipped
 
 - **Token Warning Threshold**
   - Token count threshold for showing warnings
