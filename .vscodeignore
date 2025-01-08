@@ -10,13 +10,17 @@ src/**
 .gitignore
 .yarnrc
 **/tsconfig.json
-.eslint*
+eslint*
+esbuild*
+.llmcontextignore
+.github
 
 # Ignore source map files
 **/*.map
 
 # Ignore dependencies
 node_modules/**
+builds/**
 
 # Do not ignore the following files
 !out/tiktoken_bg.wasm

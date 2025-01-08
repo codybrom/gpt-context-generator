@@ -264,7 +264,7 @@
 		"lint": "eslint src",
 		"pretest": "yarn run build && yarn run lint",
 		"test": "node ./out/test/runTest.js",
-		"vscode:package": "yarn run build && vsce package --out 'builds'",
+		"vscode:package": "yarn run build && vsce package -o builds/llm-context-generator-$npm_package_version.zip",
 		"vscode:publish": "yarn run build && vsce publish"
 	},
 	"dependencies": {
