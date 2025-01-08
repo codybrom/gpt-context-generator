@@ -8,6 +8,7 @@ import {
 	getExtension,
 	resolvePath,
 	getDirname,
+	getBasename,
 } from '../utils/fileUtils';
 import { formatFileComment } from '../utils/markdownUtils';
 import { estimateTokenCount } from '../utils/tokenUtils';
@@ -94,12 +95,28 @@ export class ContextGenerator {
 		};
 	}
 
+	private async handleSingleFile(
+		filePath: string,
+		relPath: string,
+		contextParts: string[],
+	): Promise<void> {
+		if (isIgnored(relPath)) {
+			showMessage.warning(
+				`Note: "${getBasename(filePath)}" matches patterns in your ignore files but will be included anyway since it was specifically selected.`,
+			);
+		}
+
+		if (!isDirectory(filePath)) {
+			await this.processFile(filePath, relPath, contextParts);
+		}
+	}
+
 	private async processOpenFile(
 		filePath: string,
 		contextParts: string[],
 	): Promise<void> {
 		const relPath = getRelativePath(this.workspacePath, filePath);
-		await this.processFile(filePath, relPath, contextParts);
+		await this.handleSingleFile(filePath, relPath, contextParts);
 
 		const content = readFileContent(filePath);
 		await this.processImports(filePath, content, contextParts);
@@ -115,6 +132,7 @@ export class ContextGenerator {
 			const resolvedPath = resolvePath(getDirname(filePath), importPath);
 			const relPath = getRelativePath(this.workspacePath, resolvedPath);
 
+			// For imports, we do respect ignore patterns
 			if (isIgnored(relPath)) {
 				continue;
 			}
@@ -156,6 +174,7 @@ export class ContextGenerator {
 			const filePath = resolvePath(dir, file);
 			const relPath = getRelativePath(this.workspacePath, filePath);
 
+			// For workspace-wide scanning, respect ignore patterns
 			if (isIgnored(relPath)) {
 				continue;
 			}
@@ -172,9 +191,18 @@ export class ContextGenerator {
 		files: string[],
 		contextParts: string[],
 	): Promise<void> {
+		// Special case for single marked file
+		if (files.length === 1) {
+			const filePath = files[0];
+			const relPath = getRelativePath(this.workspacePath, filePath);
+			await this.handleSingleFile(filePath, relPath, contextParts);
+			return;
+		}
+
+		// For multiple files, trust the marking process's decisions
 		for (const filePath of files) {
 			const relPath = getRelativePath(this.workspacePath, filePath);
-			if (!isIgnored(relPath) && !isDirectory(filePath)) {
+			if (!isDirectory(filePath)) {
 				await this.processFile(filePath, relPath, contextParts);
 			}
 		}

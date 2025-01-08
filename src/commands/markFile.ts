@@ -23,7 +23,7 @@ export const markFile = {
 		action: () => void,
 		message: string,
 		markedFilesProvider: MarkedFilesProvider,
-	) {
+	): Promise<void> {
 		action();
 		showMessage.info(message);
 		await markedFilesProvider.refresh();
@@ -61,30 +61,43 @@ export const markFile = {
 			return;
 		}
 
+		if (markedFiles.has(filePath)) {
+			this.unmarkFile(filePath, markedFilesProvider);
+		} else {
+			await this.handleSingleFile(filePath, workspacePath, markedFilesProvider);
+		}
+	},
+
+	async handleSingleFile(
+		filePath: string,
+		workspacePath: string,
+		markedFilesProvider: MarkedFilesProvider,
+	): Promise<boolean> {
 		const relPath = getRelativePath(workspacePath, filePath);
+
 		if (isIgnored(relPath)) {
 			showMessage.warning(
-				`Cannot mark "${getBasename(filePath)}": File is excluded\nThis file matches patterns in your ignore files (.gitignore, .dockerignore, etc.)\nPath: ${relPath}`,
+				`Note: "${getBasename(filePath)}" matches patterns in your ignore files but will be marked anyway since it was specifically selected.`,
 			);
-			return;
 		}
 
 		if (!this.isFileTypeSupported(filePath)) {
 			showMessage.warning(
 				`Cannot mark "${getBasename(filePath)}": Unsupported file type (.${getExtension(filePath)})\nSupported types: ${getConfig().detectedFileExtensions.join(', ')}\nYou can add more file types in Settings > LLM Context Generator > Detected File Extensions`,
 			);
-			return;
+			return false;
 		}
 
-		if (markedFiles.has(filePath)) {
-			this.unmarkFile(filePath, markedFilesProvider);
-		} else {
+		if (!markedFiles.has(filePath)) {
 			this.updateMarkedFiles(
 				() => markedFiles.add(filePath),
 				`Marked: ${getBasename(filePath)}`,
 				markedFilesProvider,
 			);
+		} else {
+			showMessage.info('Selected file is already marked.');
 		}
+		return true;
 	},
 
 	async unmarkFromTreeView(
@@ -113,6 +126,16 @@ export const markFile = {
 			return;
 		}
 
+		// Special case: single non-directory file selected
+		if (uris.length === 1 && !isDirectory(uris[0].fsPath)) {
+			await this.handleSingleFile(
+				uris[0].fsPath,
+				workspacePath,
+				markedFilesProvider,
+			);
+			return;
+		}
+
 		const newFiles = new Set<string>();
 		const ignoredFiles = new Set<string>();
 		const unsupportedFiles = new Set<string>();
@@ -131,7 +154,13 @@ export const markFile = {
 						return;
 					}
 				}
-				await this.processPath(filePath, newFiles, workspacePath);
+				await this.processPath(
+					filePath,
+					newFiles,
+					ignoredFiles,
+					unsupportedFiles,
+					workspacePath,
+				);
 			}),
 		);
 
@@ -175,15 +204,20 @@ export const markFile = {
 	async processPath(
 		path: string,
 		newFiles: Set<string>,
+		ignoredFiles: Set<string>,
+		unsupportedFiles: Set<string>,
 		workspacePath: string,
 	): Promise<void> {
 		if (!isDirectory(path)) {
 			const relPath = getRelativePath(workspacePath, path);
+			// Only check ignore status for files that are part of bulk operations
 			if (isIgnored(relPath)) {
-				return; // Skip warning as it's handled at higher level
+				ignoredFiles.add(path);
+				return;
 			}
 			if (!this.isFileTypeSupported(path)) {
-				return; // Skip warning as it's handled at higher level
+				unsupportedFiles.add(path);
+				return;
 			}
 			if (!markedFiles.has(path)) {
 				newFiles.add(path);
@@ -199,10 +233,17 @@ export const markFile = {
 					const relPath = getRelativePath(workspacePath, filePath);
 
 					if (isIgnored(relPath)) {
+						ignoredFiles.add(filePath);
 						return;
 					}
 
-					await this.processPath(filePath, newFiles, workspacePath);
+					await this.processPath(
+						filePath,
+						newFiles,
+						ignoredFiles,
+						unsupportedFiles,
+						workspacePath,
+					);
 				}),
 			);
 		} catch (error) {
