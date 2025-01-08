@@ -18,9 +18,12 @@ import { env, ViewColumn, window, workspace } from 'vscode';
 
 export class ContextGenerator {
 	private detectedFileExtensions: string[];
+	private enforceFileTypes: boolean;
 
 	constructor(private workspacePath: string) {
-		this.detectedFileExtensions = getConfig().detectedFileExtensions;
+		const config = getConfig();
+		this.detectedFileExtensions = config.detectedFileExtensions;
+		this.enforceFileTypes = config.enforceFileTypes;
 		initializeIgnoreFilter(workspacePath);
 	}
 
@@ -183,7 +186,10 @@ export class ContextGenerator {
 		contextParts: string[],
 	): Promise<void> {
 		const fileExtension = getExtension(filePath);
-		if (this.detectedFileExtensions.includes(fileExtension)) {
+		if (
+			!this.enforceFileTypes ||
+			this.detectedFileExtensions.includes(fileExtension)
+		) {
 			const fileData = this.createFileData(filePath, relPath);
 			contextParts.push(`${formatFileComment(fileData)}\n\n`);
 		}

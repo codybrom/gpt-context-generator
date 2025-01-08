@@ -39,8 +39,12 @@ export const markFile = {
 
 	isFileTypeSupported(filePath: string): boolean {
 		const extension = getExtension(filePath);
-		const supportedExtensions = getConfig().detectedFileExtensions;
-		return supportedExtensions.includes(extension);
+		const config = getConfig();
+		// Only check against supported extensions if enforceFileTypes is enabled
+		return (
+			!config.enforceFileTypes ||
+			config.detectedFileExtensions.includes(extension)
+		);
 	},
 
 	async toggleMark(markedFilesProvider: MarkedFilesProvider) {

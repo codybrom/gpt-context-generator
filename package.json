@@ -61,11 +61,21 @@
 					"light": "images/clear-light.svg",
 					"dark": "images/clear-dark.svg"
 				}
+			},
+			{
+				"command": "gpt-context-generator.markFilesFromExplorer",
+				"title": "Mark for LLM Context"
 			}
 		],
 		"configuration": {
 			"title": "LLM Context Generator",
 			"properties": {
+				"gpt-context-generator.enforceFileTypes": {
+					"type": "boolean",
+					"default": true,
+					"description": "When enabled, only files with extensions listed in detectedFileExtensions will be included/allowed for marking/workspace context collection. When disabled, all file types will be included.",
+					"order": 1
+				},
 				"gpt-context-generator.detectedFileExtensions": {
 					"type": "array",
 					"items": {
@@ -155,36 +165,7 @@
 					],
 					"description": "File extensions that will be included when generating context. Supports multiple programming languages, frameworks, tools, and development workflows.",
 					"markdownDescription": "File extensions that will be included when generating context. Supports:\n\n- **JavaScript/TypeScript**: js, jsx, ts, tsx, mjs, cjs, vue, svelte, astro, njk, liquid\n- **Python**: py, pyi, pyw, ipynb\n- **Ruby**: rb, rake, gemspec, erb, slim, haml\n- **PHP**: php, phtml\n- **Swift & Objective-C**: swift, m, mm, h, hpp\n- **Systems Programming**: c, cpp, cc, cxx, rs, go, zig\n- **Web/Styling**: html, css, scss, sass, less\n- **Mobile & Cross-Platform**: java, kt, kts, gradle, plist, dart, xaml\n- **Shell & Scripts**: sh, bash, zsh, bat, cmd, nsh\n- **Data/Config**: json, yaml, yml, toml, ini, env, xcconfig, podspec, editorconfig, dockerignore, gitignore, eslintrc, prettierrc, stylelintrc, babelrc\n- **Build & Deploy**: makefile, dockerfile, k8s\n- **Documentation**: md, mdx, txt, tex\n- **Query Languages**: sql, prisma\n- **Data Formats**: csv, tsv, xml",
-					"order": 1
-				},
-				"gpt-context-generator.outputMethod": {
-					"type": "string",
-					"enum": [
-						"newWindow",
-						"clipboard"
-					],
-					"default": "clipboard",
-					"description": "Output method for the generated context (New Window or Clipboard)."
-				},
-				"gpt-context-generator.outputLanguage": {
-					"type": "string",
-					"enum": [
-						"plaintext",
-						"markdown"
-					],
-					"default": "plaintext",
-					"description": "Output language for the generated context when the output method is set to New Window.",
-					"scope": "window"
-				},
-				"gpt-context-generator.includePackageJson": {
-					"type": "boolean",
-					"default": true,
-					"description": "Include package.json as part of the context (Open File Only)."
-				},
-				"gpt-context-generator.tokenWarningThreshold": {
-					"type": "number",
-					"default": 8000,
-					"description": "Token count threshold for showing warnings. Default is 8000 tokens."
+					"order": 2
 				},
 				"gpt-context-generator.ignoreFiles": {
 					"type": "array",
@@ -197,7 +178,40 @@
 					],
 					"description": "Specify files that contain ignore patterns (like .gitignore). Each file's patterns will be used to exclude matching files from the generated context. Files are processed in order, and it's okay if a listed ignore file doesn't exist.",
 					"markdownDescription": "Specify files that contain ignore patterns. Each file's patterns will be used to exclude matching files from the generated context.\n\n**Examples:**\n- `.gitignore`\n- `.dockerignore`\n- `prettier.ignore`\n\nFiles are processed in order, and it's okay if some files don't exist.",
-					"order": 2
+					"order": 3,
+					"gpt-context-generator.tokenWarningThreshold": {
+						"type": "number",
+						"default": 32000,
+						"description": "Generated input token threshold to show warnings. Default is 32,000 tokens.",
+						"order": 4
+					},
+					"gpt-context-generator.outputMethod": {
+						"type": "string",
+						"enum": [
+							"newWindow",
+							"clipboard"
+						],
+						"default": "clipboard",
+						"description": "Output method for the generated context (New Window or Clipboard).",
+						"order": 5
+					},
+					"gpt-context-generator.outputLanguage": {
+						"type": "string",
+						"enum": [
+							"plaintext",
+							"markdown"
+						],
+						"default": "plaintext",
+						"description": "(Using New Window Output): Select the format that VSCode treats the generated context in a window.",
+						"scope": "window",
+						"order": 6
+					},
+					"gpt-context-generator.includePackageJson": {
+						"type": "boolean",
+						"default": false,
+						"description": "Always include package.json as part of the context",
+						"order": 7
+					}
 				}
 			}
 		},
@@ -213,6 +227,13 @@
 			]
 		},
 		"menus": {
+			"view/item/context": [
+				{
+					"command": "gpt-context-generator.unmarkFileFromTreeView",
+					"when": "view == markedFilesView && viewItem == markedFile",
+					"group": "inline"
+				}
+			],
 			"view/title": [
 				{
 					"command": "gpt-context-generator.createGPTFriendlyContextForMarkedFiles",
@@ -227,14 +248,9 @@
 			],
 			"explorer/context": [
 				{
-					"command": "gpt-context-generator.markFileForInclusion",
-					"when": "resourceScheme == file && !explorerResourceIsFolder",
-					"group": "navigation@1"
-				},
-				{
 					"command": "gpt-context-generator.markFilesFromExplorer",
-					"when": "resourceScheme == file",
-					"group": "navigation@2"
+					"when": "explorerResourceIsFolder || resourceScheme == file",
+					"group": "1_debug@1"
 				}
 			]
 		}

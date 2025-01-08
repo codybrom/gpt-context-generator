@@ -17,6 +17,7 @@ export const getConfig = () => {
 		outputLanguage: config.get('outputLanguage') as string,
 		detectedFileExtensions: config.get('detectedFileExtensions') as string[],
 		ignoreFiles: config.get('ignoreFiles') as string[],
+		enforceFileTypes: (config.get('enforceFileTypes') as boolean) ?? true,
 	};
 };
 

@@ -9,7 +9,11 @@ import {
 export const createContext = {
 	async generateContext(
 		workspacePath: string,
-		options: { openFilePath?: string; markedFiles?: string[] },
+		options: {
+			openFilePath?: string;
+			markedFiles?: string[];
+			bypassFileTypeEnforcement?: boolean;
+		},
 	) {
 		const contextGenerator = createContextGenerator(workspacePath);
 		await contextGenerator.handleContextGeneration({
@@ -29,7 +33,10 @@ export const createContext = {
 		const workspacePath = validateWorkspace();
 		const openFilePath = workspacePath && getActiveFilePath();
 		if (workspacePath && openFilePath) {
-			await this.generateContext(workspacePath, { openFilePath });
+			await this.generateContext(workspacePath, {
+				openFilePath,
+				bypassFileTypeEnforcement: true,
+			});
 		}
 	},
 
