@@ -54,18 +54,22 @@ export class ContextGenerator {
 
 	private async showTokenCount(content: string): Promise<void> {
 		const tokenCount = await estimateTokenCount(content);
+		const threshold = getConfig().tokenWarningThreshold;
+
 		const message = `The generated context is approximately ${tokenCount} tokens${
-			tokenCount > 8000 ? ', which is greater than 8000 tokens' : ''
+			tokenCount > threshold
+				? `, which is greater than ${threshold} tokens`
+				: ''
 		}.`;
 
-		if (tokenCount > 8000) {
+		if (tokenCount > threshold) {
 			showMessage.warning(message);
 		} else {
 			showMessage.info(message);
 		}
 	}
 
-	private async generateContext({
+	public async generateContext({
 		openFilePath,
 		markedFiles,
 		includePackageJson = false,

@@ -77,7 +77,7 @@ Configure the extension in VS Code settings:
 
 - **Token Warning Threshold**
   - Token count threshold for showing warnings
-  - Default: `8000`
+  - Default: `32000`
 
 - **Output Method**
   - `clipboard`: Copy to clipboard (default)

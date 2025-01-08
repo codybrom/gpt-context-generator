@@ -11,9 +11,14 @@ import {
 	FileDecoration,
 	window,
 } from 'vscode';
-import { getBasename, getDirname, readFileContent } from '../utils/fileUtils';
-import { getConfig, showMessage } from '../utils/vscodeUtils';
+import { getBasename, getDirname } from '../utils/fileUtils';
+import {
+	getConfig,
+	showMessage,
+	validateWorkspace,
+} from '../utils/vscodeUtils';
 import { estimateTokenCount } from '../utils/tokenUtils';
+import { createContextGenerator } from '../generators/contextGenerator';
 
 export const markedFiles = new Set<string>();
 
@@ -144,10 +149,17 @@ export class MarkedFilesProvider
 	}
 
 	private async updateTokenCount(): Promise<void> {
-		const allContent = Array.from(markedFiles)
-			.map((filePath) => readFileContent(filePath))
-			.join('\n');
-		this._tokenCount = await estimateTokenCount(allContent);
+		const workspacePath = validateWorkspace();
+		if (!workspacePath) {
+			return;
+		}
+
+		const contextGenerator = createContextGenerator(workspacePath);
+		const formattedContext = await contextGenerator.generateContext({
+			markedFiles: Array.from(markedFiles),
+		});
+
+		this._tokenCount = await estimateTokenCount(formattedContext);
 	}
 
 	private async handleFileChange(): Promise<void> {
