@@ -268,7 +268,7 @@
 		"vscode:publish": "yarn run build && vsce publish"
 	},
 	"dependencies": {
-		"@dqbd/tiktoken": "^1.0.18",
+		"@dqbd/tiktoken": "^1.0.19",
 		"highlight.js": "^11.11.1",
 		"ignore": "^7.0.0"
 	},
