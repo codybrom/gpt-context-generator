@@ -289,7 +289,7 @@
 		"mocha": "^11.0.1",
 		"prettier": "^3.4.2",
 		"typescript": "^5.7.2",
-		"typescript-eslint": "^8.19.1"
+		"typescript-eslint": "^8.22.0"
 	},
 	"prettier": {
 		"semi": true,
